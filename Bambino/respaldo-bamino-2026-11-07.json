@@ -1,0 +1,131 @@
+{
+  "format": "bamino-construcciones-backup",
+  "version": 1,
+  "exportedAt": "2026-11-07T16:44:44.535Z",
+  "data": {
+    "projects": [
+      {
+        "id": "b404f82e-97d4-424e-8de1-38b5c24032b1",
+        "name": "Remodelación de vivienda",
+        "location": "Cuenca",
+        "date": "2026-11-09",
+        "status": "En ejecución",
+        "budget": 12800,
+        "paid": 6400,
+        "notes": "Acabados interiores y renovación de cocina.",
+        "clientId": "ab8a5816-39f0-420e-bf3f-74046e95170d"
+      },
+      {
+        "id": "74f8b7e5-82e5-4c42-855d-aaf7d132a507",
+        "name": "Ampliación de local comercial",
+        "location": "Centro",
+        "date": "2026-11-13",
+        "status": "Planificada",
+        "budget": 18600,
+        "paid": 5000,
+        "notes": "Preparar cronograma de obra y materiales.",
+        "clientId": "9e1d31fe-2902-429e-9ab0-303cc0ad7831"
+      },
+      {
+        "id": "4a6659d2-3027-42c6-a33b-cc755f1dbdf6",
+        "name": "Diseño y obra de terraza",
+        "location": "Totoracocha",
+        "date": "2026-11-18",
+        "status": "En ejecución",
+        "budget": 7400,
+        "paid": 4200,
+        "notes": "Impermeabilización y estructura liviana.",
+        "clientId": "ab8a5816-39f0-420e-bf3f-74046e95170d"
+      },
+      {
+        "id": "265f3d9d-572b-4e81-983c-127c43eeeda8",
+        "name": "Adecuación de oficinas",
+        "location": "Cuenca",
+        "date": "2026-11-25",
+        "status": "Pausada",
+        "budget": 9200,
+        "paid": 2500,
+        "notes": "Pendiente aprobación de acabados.",
+        "clientId": "d441a70d-0928-47d1-8e5c-00efa87c98c4"
+      }
+    ],
+    "notes": [
+      {
+        "id": "1a95cff2-ff67-4bfc-b5d6-9d6acb56b3d2",
+        "title": "Revisar cronograma semanal",
+        "body": "Confirmar avances y coordinar las entregas de materiales con cada frente de trabajo.",
+        "createdAt": "2026-11-07T15:41:41.244Z"
+      },
+      {
+        "id": "9e8e90c0-2fef-49f4-bc96-ce29a25b1e19",
+        "title": "Seguimiento de presupuestos",
+        "body": "Dar seguimiento a propuestas pendientes y actualizar los próximos pasos.",
+        "createdAt": "2026-11-07T15:41:41.244Z"
+      }
+    ],
+    "goals": {
+      "works": {
+        "value": 3,
+        "target": 5,
+        "label": "Obras en ejecución"
+      },
+      "collections": {
+        "value": 2,
+        "target": 4,
+        "label": "Cobros completados"
+      }
+    },
+    "inventory": [
+      {
+        "id": "fe7c50eb-8752-4d29-923d-a007dfaf997b",
+        "name": "Pegamento contacto",
+        "unit": "unidades",
+        "stock": 1,
+        "unitPrice": 1500,
+        "movements": [
+          {
+            "id": "e66df0d1-1344-4a02-9ad9-19689b3b86a3",
+            "type": "entrada",
+            "quantity": 1,
+            "date": "2026-11-07",
+            "note": "Stock inicial"
+          }
+        ]
+      }
+    ],
+    "clients": [
+      {
+        "id": "ab8a5816-39f0-420e-bf3f-74046e95170d",
+        "number": "1",
+        "name": "Proyecto residencial",
+        "phone": "",
+        "email": ""
+      },
+      {
+        "id": "9e1d31fe-2902-429e-9ab0-303cc0ad7831",
+        "number": "2",
+        "name": "Proyecto comercial",
+        "phone": "",
+        "email": ""
+      },
+      {
+        "id": "d441a70d-0928-47d1-8e5c-00efa87c98c4",
+        "number": "3",
+        "name": "Proyecto corporativo",
+        "phone": "",
+        "email": ""
+      },
+      {
+        "id": "b33a40ca-b3f8-47eb-bc63-664a6fb052a8",
+        "number": "43969947",
+        "name": "digiano macos",
+        "phone": "2281323926",
+        "email": ""
+      }
+    ],
+    "documents": {
+      "clientBudget": null,
+      "materialsList": null
+    }
+  }
+}

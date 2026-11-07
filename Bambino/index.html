@@ -1,0 +1,1525 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171717">
+  <meta name="description" content="Panel de gestión de obras de Bamino Construcciones.">
+  <title>Bamino Construcciones · Gestión de obras</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202020;
+      --muted: #77736f;
+      --line: #e8e4df;
+      --paper: #fff;
+      --canvas: #f6f5f3;
+      --green: #ed7900;
+      --green-dark: #c96500;
+      --green-pale: #fff1e0;
+      --gold: #e98513;
+      --gold-pale: #fff3e4;
+      --red: #b94f45;
+      --red-pale: #faece9;
+      --shadow: 0 12px 32px rgba(35, 29, 22, .055);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--canvas); font-size: 14px; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(237, 121, 0, .28); outline-offset: 2px;
+    }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 5; display: flex; width: 246px;
+      flex-direction: column; padding: 23px 16px 18px; color: #f4f1ed;
+      background: radial-gradient(ellipse at 0 0, rgba(237,121,0,.12), transparent 42%), #171717;
+      border-right: 1px solid rgba(255,255,255,.07);
+    }
+    .brand { display: flex; gap: 12px; align-items: center; padding: 0 8px 25px; }
+    .brand-mark {
+      display: block; width: 55px; height: 55px; flex: 0 0 55px; object-fit: cover;
+      border: 2px solid rgba(245,130,0,.8); border-radius: 50%;
+      background: #fff; box-shadow: 0 0 0 4px rgba(237,121,0,.1);
+    }
+    .brand-name { font-size: 11px; font-weight: 750; letter-spacing: .12em; }
+    .brand-caption { margin-top: 5px; color: #b7afa7; font-size: 9px; letter-spacing: .12em; }
+    .nav-label { padding: 0 12px 10px; color: #8d8780; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav-item {
+      display: flex; width: 100%; gap: 12px; align-items: center; padding: 11px 12px;
+      border: 0; border-radius: 9px; color: #c5c0ba; background: transparent; text-align: left;
+      transition: background .16s, color .16s;
+    }
+    .nav-item:hover { color: white; background: rgba(255,255,255,.07); }
+    .nav-item.active { color: #fff; background: linear-gradient(100deg, rgba(237,121,0,.24), rgba(237,121,0,.08)); box-shadow: inset 3px 0 #f58200; }
+    .nav-icon { display: grid; width: 18px; place-items: center; color: #e9a34f; font-size: 16px; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 11px 0; border-top: 1px solid rgba(255,255,255,.12); }
+    .team-label { color: #99928a; font-size: 11px; }
+    .team-name { margin-top: 7px; color: #f4f1ed; font-size: 12px; font-weight: 650; }
+    .main { min-height: 100vh; margin-left: 246px; }
+    .topbar {
+      position: sticky; top: 0; z-index: 4; display: flex; min-height: 76px; align-items: center;
+      justify-content: space-between; gap: 16px; padding: 12px 38px; border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.94); backdrop-filter: blur(14px);
+    }
+    .crumb { color: var(--muted); font-size: 12px; }
+    .crumb strong { color: var(--ink); font-weight: 650; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .today { color: var(--muted); font-size: 12px; }
+    .btn {
+      display: inline-flex; min-height: 38px; align-items: center; justify-content: center; gap: 8px;
+      padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: #fff;
+      font-size: 12px; font-weight: 650; transition: background .16s, transform .16s;
+    }
+    .btn:hover { background: #f6f8f5; }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { border-color: var(--green); color: #fff; background: linear-gradient(135deg, #f58b13, #df6e00); box-shadow: 0 4px 12px rgba(237,121,0,.16); }
+    .btn-primary:hover { background: var(--green-dark); }
+    .btn-quiet { min-height: 32px; padding: 0 10px; color: var(--green); border-color: transparent; background: transparent; }
+    .btn-quiet:hover { background: var(--green-pale); }
+    .btn-danger { color: var(--red); }
+    .content { width: min(1200px, 100%); margin: 0 auto; padding: 34px 38px 60px; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 25px; }
+    .eyebrow { margin-bottom: 8px; color: var(--green); font-size: 10px; font-weight: 750; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(26px, 3vw, 35px); font-weight: 500; letter-spacing: -.025em; }
+    .subheading { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .metric, .card { border: 1px solid var(--line); border-radius: 13px; background: var(--paper); box-shadow: var(--shadow); }
+    .metric { min-height: 124px; padding: 18px; }
+    .metric-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 11px; }
+    .metric-icon { display: grid; width: 29px; height: 29px; place-items: center; border-radius: 8px; color: var(--green); background: var(--green-pale); font-size: 15px; }
+    .metric-value { margin-top: 15px; font-size: clamp(20px, 2.4vw, 27px); font-weight: 680; letter-spacing: -.04em; }
+    .metric-foot { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(240px, .85fr); gap: 17px; align-items: start; }
+    .stack { display: grid; gap: 17px; }
+    .card { padding: 19px; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .card-title { margin: 0; font-size: 13px; font-weight: 700; }
+    .card-hint { margin-top: 5px; color: var(--muted); font-size: 11px; }
+    .project-list { display: grid; }
+    .project-row { display: grid; grid-template-columns: 41px minmax(0,1fr) auto; gap: 12px; align-items: center; padding: 13px 0; border-top: 1px solid #f0f1ee; }
+    .project-row:first-child { padding-top: 0; border-top: 0; }
+    .date-tile { display: grid; width: 39px; height: 43px; align-content: center; justify-items: center; border-radius: 8px; color: var(--green-dark); background: #f1f5f0; }
+    .date-day { font-size: 15px; font-weight: 750; line-height: 1.1; }
+    .date-month { margin-top: 3px; font-size: 9px; text-transform: uppercase; }
+    .project-name { overflow: hidden; font-size: 12px; font-weight: 670; text-overflow: ellipsis; white-space: nowrap; }
+    .project-meta { overflow: hidden; margin-top: 5px; color: var(--muted); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+    .project-amount { color: #354139; font-size: 11px; font-weight: 650; text-align: right; white-space: nowrap; }
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; border-radius: 20px; font-size: 9px; font-weight: 650; white-space: nowrap; }
+    .status::before { width: 5px; height: 5px; border-radius: 50%; background: currentColor; content: ""; }
+    .status-active { color: #32704d; background: #eaf4ed; }
+    .status-planned { color: #90632c; background: #faf2e5; }
+    .status-paused { color: #68716a; background: #eff1ef; }
+    .status-done { color: #66706a; background: #f0f2f0; }
+    .goal { margin-top: 17px; }
+    .goal:first-of-type { margin-top: 0; }
+    .goal-label { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 11px; }
+    .goal-label span:last-child { color: var(--muted); font-size: 10px; }
+    .progress { overflow: hidden; height: 6px; margin-top: 9px; border-radius: 10px; background: #edf0ec; }
+    .progress > span { display: block; height: 100%; border-radius: inherit; background: var(--green); transition: width .25s; }
+    .goal-controls { display: flex; gap: 5px; margin-top: 8px; }
+    .tiny-btn { width: 25px; height: 24px; padding: 0; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); background: white; }
+    .tiny-btn:hover { color: var(--green); background: var(--green-pale); }
+    .empty-state { padding: 30px 12px; color: var(--muted); font-size: 12px; text-align: center; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    .toolbar-left, .toolbar-right { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+    .field, .select, .textarea {
+      min-height: 38px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: white;
+    }
+    .field::placeholder, .textarea::placeholder { color: #a3aaa4; }
+    .search { width: min(250px, 56vw); }
+    .select { min-width: 140px; }
+    .table-wrap { overflow: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 11px 12px; color: var(--muted); font-size: 10px; font-weight: 650; white-space: nowrap; }
+    td { padding: 13px 12px; border-top: 1px solid #f0f1ee; font-size: 11px; vertical-align: middle; }
+    .table-main { font-weight: 650; }
+    .table-sub { margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .amount { font-weight: 650; white-space: nowrap; }
+    .table-actions { display: flex; justify-content: flex-end; gap: 4px; }
+    .text-link { padding: 5px; border: 0; color: var(--green); background: transparent; font-size: 11px; font-weight: 650; }
+    .calendar-head { display: flex; align-items: center; gap: 12px; }
+    .calendar-month { min-width: 150px; font-size: 14px; font-weight: 700; text-align: center; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); }
+    .calendar-label { padding: 10px 3px; color: var(--muted); font-size: 9px; font-weight: 700; text-align: center; text-transform: uppercase; }
+    .calendar-cell { min-height: 86px; padding: 7px 5px; border-top: 1px solid #f0f1ee; border-right: 1px solid #f0f1ee; }
+    .calendar-cell:nth-child(7n) { border-right: 0; }
+    .calendar-cell.muted { color: #b5bbb6; background: #fbfcfa; }
+    .calendar-num { display: grid; width: 23px; height: 23px; place-items: center; border-radius: 50%; font-size: 10px; }
+    .calendar-num.today { color: #fff; background: var(--green); }
+    .calendar-event { overflow: hidden; margin-top: 5px; padding: 4px 5px; border-radius: 4px; color: var(--green-dark); background: #eaf2ec; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+    .calendar-event.planned { color: #815c2d; background: #faf2e5; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 15px; }
+    .stat-big { margin: 14px 0 5px; font-size: 28px; font-weight: 700; letter-spacing: -.04em; }
+    .bar-chart { display: flex; height: 190px; align-items: end; gap: 12px; padding: 18px 4px 0; }
+    .bar-col { display: flex; height: 100%; flex: 1; flex-direction: column; justify-content: end; align-items: center; gap: 7px; }
+    .bar { width: min(35px, 74%); min-height: 5px; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #f5a342, #dc7100); }
+    .bar-label { color: var(--muted); font-size: 9px; }
+    .note-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .note-card { position: relative; min-height: 145px; padding: 16px; border: 1px solid #e8e4d8; border-radius: 9px; background: #fffdf7; }
+    .note-title { padding-right: 20px; font-size: 12px; font-weight: 700; }
+    .note-body { margin-top: 9px; color: #697169; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .note-date { margin-top: 12px; color: #9a9e97; font-size: 9px; }
+    .note-delete { position: absolute; top: 9px; right: 9px; width: 25px; height: 25px; border: 0; border-radius: 6px; color: #8d938d; background: transparent; }
+    .note-delete:hover { color: var(--red); background: var(--red-pale); }
+    .finance-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin-bottom: 15px; }
+    .materials-summary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 15px; }
+    .inventory-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin-bottom: 15px; }
+    .stock-actions { display: flex; flex-wrap: wrap; gap: 4px; }
+    .stock-entry { color: var(--green); }
+    .stock-exit { color: var(--red); }
+    .finance-box { padding: 15px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
+    .finance-box span { color: var(--muted); font-size: 10px; }
+    .finance-box strong { display: block; margin-top: 8px; font-size: 20px; }
+    .client-list { display: grid; gap: 14px; }
+    .client-card { overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: #fff; }
+    .client-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 17px; }
+    .client-identity { display: grid; grid-template-columns: minmax(43px, max-content) minmax(0, 1fr); gap: 12px; align-items: center; min-width: 0; }
+    .client-number { display: grid; min-width: 43px; max-width: 140px; min-height: 43px; padding: 7px 9px; place-items: center; border-radius: 10px; color: var(--green-dark); background: var(--green-pale); font-size: 12px; font-weight: 750; text-align: center; overflow-wrap: anywhere; }
+    .client-identity > div:last-child { min-width: 0; }
+    .client-name { font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+    .client-contact { margin-top: 5px; color: var(--muted); font-size: 10px; overflow-wrap: anywhere; }
+    .client-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+    .client-totals { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; padding: 0 17px 16px; }
+    .client-total { padding: 11px; border-radius: 8px; background: #f8f7f5; }
+    .client-total span { color: var(--muted); font-size: 9px; }
+    .client-total strong { display: block; margin-top: 5px; font-size: 12px; }
+    .client-works { padding: 0 17px 15px; }
+    .client-works-title { margin: 0 0 7px; font-size: 11px; font-weight: 700; }
+    .client-works .table-wrap { border-top: 1px solid #f0f1ee; }
+    .client-works td { padding: 10px 8px; }
+    .client-budget-sheet {
+      width: 100%; max-width: 660px; margin: 0 auto; padding: 15px 30px; border: 1px solid #000;
+      color: #000; background: #fff; font-family: Arial, sans-serif; font-size: 12px;
+    }
+    .client-budget-sheet .budget-header { display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 2px solid #000; font-size: 12px; }
+    .client-budget-sheet .budget-logo { max-width: 60%; }
+    .client-budget-sheet .budget-logo h2 { margin: 0; font-size: 20px; }
+    .client-budget-sheet .budget-logo small { font-size: 10px; }
+    .client-budget-sheet .budget-header-right { width: 180px; padding: 5px 10px; border: 1px solid #000; font-weight: 700; text-align: center; }
+    .client-budget-sheet .budget-header-right > div { margin: 3px 0; }
+    .client-budget-sheet .budget-info, .client-budget-sheet .budget-items, .client-budget-sheet .budget-footer { margin-top: 10px; font-size: 12px; }
+    .client-budget-sheet label { display: inline-block; width: 70px; margin-bottom: 6px; vertical-align: top; }
+    .client-budget-sheet input[type="text"], .client-budget-sheet input[type="number"], .client-budget-sheet input[type="date"] {
+      width: calc(100% - 85px); margin-bottom: 6px; padding: 2px 5px; border: 0; border-bottom: 1px solid #000;
+      border-radius: 0; color: #000; background: transparent; font-family: monospace; font-size: 12px;
+    }
+    .client-budget-sheet input[type="checkbox"] { width: auto; margin-bottom: 0; accent-color: #000; }
+    .client-budget-sheet .budget-checkboxes label { width: auto; margin-right: 10px; }
+    .client-budget-sheet table { width: 100%; margin-top: 5px; border-collapse: collapse; font-size: 12px; text-align: center; }
+    .client-budget-sheet table, .client-budget-sheet th, .client-budget-sheet td { border: 1px solid #000; }
+    .client-budget-sheet th, .client-budget-sheet td { height: 22px; padding: 3px 6px; text-align: center; }
+    .client-budget-sheet td.input-cell input { width: 90%; margin: 0; padding: 2px; border: 0; font-family: monospace; font-size: 12px; }
+    .client-budget-sheet .right-align { padding-right: 10px; text-align: right; }
+    .client-budget-sheet .budget-footer { margin-top: 20px; }
+    .client-budget-sheet .budget-actions { margin-top: 15px; text-align: center; }
+    .client-budget-sheet .budget-actions button { padding: 5px 10px; border: 1px solid #777; border-radius: 3px; color: #000; background: #f5f5f5; font: 12px Arial, sans-serif; }
+    .client-budget-sheet .budget-actions button + button { margin-left: 10px; }
+    .materials-list-sheet { width: min(980px, 100%); margin: 0 auto; padding: 24px; border: 1px solid var(--line); border-radius: 13px; background: #fff; box-shadow: var(--shadow); }
+    .materials-list-details { display: grid; gap: 10px; margin-bottom: 16px; }
+    .materials-list-group { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+    .materials-list-group label, .materials-list-footer label { display: grid; gap: 5px; color: #45413d; font-size: 11px; font-weight: 650; }
+    .materials-list-group input, .materials-list-footer textarea, .materials-list-table input, .materials-list-table select {
+      width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px;
+      color: var(--ink); background: #fcfbf9; font: inherit; font-size: 12px;
+    }
+    .materials-list-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .materials-list-table-wrap { overflow-x: auto; margin-bottom: 16px; }
+    .materials-list-table { width: 100%; border-collapse: collapse; background: #fff; text-align: left; }
+    .materials-list-table th, .materials-list-table td { padding: 9px; border: 1px solid var(--line); font-size: 11px; }
+    .materials-list-table th { background: #f6f5f2; font-weight: 700; }
+    .materials-list-table input, .materials-list-table select { min-width: 90px; min-height: 35px; background: #fff; }
+    .materials-list-table__remove { width: 30px; height: 30px; border: 0; border-radius: 50%; color: #fff; background: var(--red); font-size: 17px; }
+    .materials-list-footer { display: grid; grid-template-columns: 1.4fr .8fr; gap: 16px; align-items: start; }
+    .materials-list-footer textarea { min-height: 100px; resize: vertical; }
+    .materials-list-contact { padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; color: #555; background: #faf9f7; font-size: 11px; line-height: 1.7; }
+    @media (max-width: 720px) {
+      .materials-list-sheet { padding: 15px; }
+      .materials-list-group, .materials-list-footer { grid-template-columns: 1fr; }
+    }
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      body:has(.client-budget-sheet) { background: #fff; }
+      body:has(.client-budget-sheet) * { visibility: hidden !important; }
+      body:has(.client-budget-sheet) .client-budget-sheet,
+      body:has(.client-budget-sheet) .client-budget-sheet * { visibility: visible !important; }
+      body:has(.client-budget-sheet) .client-budget-sheet {
+        position: absolute; inset: 0 auto auto 0; width: 100%; max-width: none; margin: 0;
+        padding: 0 15px; border: 0; box-shadow: none;
+      }
+      body:has(.client-budget-sheet) .toast { display: none !important; }
+      .client-budget-sheet input, .client-budget-sheet button { border-color: transparent; background: transparent; box-shadow: none; font-size: 12px; appearance: none; }
+      .client-budget-sheet input[readonly] { border-bottom: 1px solid #000 !important; }
+      .client-budget-sheet .budget-actions { display: none !important; visibility: hidden !important; }
+      body:has(.materials-list-sheet) * { visibility: hidden !important; }
+      body:has(.materials-list-sheet) .materials-list-sheet,
+      body:has(.materials-list-sheet) .materials-list-sheet * { visibility: visible !important; }
+      body:has(.materials-list-sheet) .materials-list-sheet { position: absolute; inset: 0 auto auto 0; width: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+      .materials-list-actions, .materials-list-table__remove { display: none !important; visibility: hidden !important; }
+      .materials-list-group input, .materials-list-footer textarea, .materials-list-table input, .materials-list-table select {
+        min-height: auto; padding: 3px 4px; border-color: transparent; background: transparent; color: #000; appearance: none;
+      }
+      .materials-list-table th, .materials-list-table td { padding: 6px; border-color: #777; }
+      .materials-list-footer textarea { resize: none; }
+    }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 20; max-width: min(360px, calc(100vw - 32px)); padding: 12px 16px; border: 1px solid #dfe6df; border-radius: 9px; color: #fff; background: #24372b; box-shadow: var(--shadow); font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    dialog { width: min(520px, calc(100vw - 28px)); max-height: calc(100vh - 28px); padding: 0; border: 0; border-radius: 13px; box-shadow: 0 24px 80px rgba(10,20,13,.25); }
+    dialog::backdrop { background: rgba(15,25,18,.48); backdrop-filter: blur(2px); }
+    .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 22px 23px 15px; border-bottom: 1px solid var(--line); }
+    .dialog-head h2 { margin: 0; font-family: Georgia, serif; font-size: 22px; font-weight: 500; }
+    .dialog-head p { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+    .close-btn { width: 30px; height: 30px; border: 0; border-radius: 7px; color: var(--muted); background: #f4f6f3; font-size: 17px; }
+    .dialog-form { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 13px; padding: 18px 23px 22px; }
+    .form-field { display: grid; gap: 6px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label { color: #536057; font-size: 10px; font-weight: 650; }
+    .form-field .field, .form-field .select, .form-field .textarea { width: 100%; }
+    .textarea { min-height: 84px; resize: vertical; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; grid-column: 1 / -1; padding-top: 6px; }
+    @media (max-width: 1000px) {
+      .sidebar { width: 215px; }
+      .main { margin-left: 215px; }
+      .content { padding-right: 24px; padding-left: 24px; }
+      .topbar { padding-right: 24px; padding-left: 24px; }
+      .metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .note-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width: 720px) {
+      .sidebar { position: sticky; inset: 0 0 auto; width: 100%; height: auto; padding: 10px 12px 8px; }
+      .brand { padding: 0 4px 9px; }
+      .brand-mark { width: 42px; height: 42px; flex-basis: 42px; border-width: 1.5px; }
+      .brand-name { font-size: 10px; }
+      .brand-caption { font-size: 8px; }
+      .nav-label, .sidebar-bottom { display: none; }
+      .nav { display: flex; overflow: auto; gap: 4px; scrollbar-width: none; }
+      .nav::-webkit-scrollbar { display: none; }
+      .nav-item { width: auto; min-width: max-content; gap: 6px; padding: 8px 10px; font-size: 11px; }
+      .nav-icon { width: auto; font-size: 13px; }
+      .main { margin-left: 0; }
+      .topbar { position: static; min-height: 56px; padding: 9px 16px; }
+      .today { display: none; }
+      .btn { min-height: 35px; padding: 0 11px; }
+      .content { padding: 25px 15px 40px; }
+      .page-heading { align-items: flex-start; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .metrics { gap: 9px; }
+      .metric { min-height: 111px; padding: 14px; }
+      .metric-top { font-size: 10px; }
+      .metric-value { font-size: 22px; }
+      .card { padding: 15px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .calendar-cell { min-height: 65px; padding: 4px 2px; }
+      .calendar-event { padding: 3px; font-size: 8px; }
+      .note-grid { grid-template-columns: 1fr; }
+      .finance-summary { grid-template-columns: 1fr; }
+      .materials-summary { grid-template-columns: 1fr; }
+      .inventory-metrics { grid-template-columns: 1fr; }
+      .client-card-head { flex-direction: column; }
+      .client-actions { justify-content: flex-start; }
+      .client-totals { gap: 6px; padding-right: 12px; padding-left: 12px; }
+      .client-total { padding: 9px 7px; }
+      .client-total strong { font-size: 11px; }
+      .project-row { grid-template-columns: 38px minmax(0,1fr); }
+      .project-amount { grid-column: 2; text-align: left; }
+    }
+    @media (max-width: 390px) {
+      .nav-item { font-size: 10px; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+      .metric { padding: 11px; }
+      .metric-icon { display: none; }
+      .dialog-form { grid-template-columns: 1fr; }
+      .form-field.full, .dialog-actions { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="brand-mark" src="imge/logo.png" alt="Logo de Bamino Construcciones">
+        <div><div class="brand-name">GESTIÓN DE OBRAS</div><div class="brand-caption">PANEL BAMINO</div></div>
+      </div>
+      <div class="nav-label">Espacio de trabajo</div>
+      <nav class="nav" aria-label="Navegación principal" id="navigation"></nav>
+      <div class="sidebar-bottom">
+        <div class="team-label">Panel de gestión</div>
+        <div class="team-name">Bamino Construcciones</div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="crumb"><span>Bamino Construcciones</span><span aria-hidden="true"> / </span><strong id="breadcrumb">Panel</strong></div>
+        <div class="top-actions"><span class="today" id="today"></span><button class="btn" id="export-backup" type="button">Descargar respaldo</button><button class="btn" id="import-backup" type="button">Restaurar respaldo</button><input id="backup-file" type="file" accept="application/json,.json" hidden><button class="btn btn-primary" id="new-project"><span aria-hidden="true">＋</span> Nueva obra</button></div>
+      </header>
+      <div class="content" id="content" aria-live="polite"></div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="project-dialog">
+    <div class="dialog-head">
+      <div><h2 id="project-dialog-title">Registrar obra</h2><p>Completa los datos para agregarla al panel.</p></div>
+      <button class="close-btn" type="button" aria-label="Cerrar" data-close>×</button>
+    </div>
+    <form class="dialog-form" id="project-form">
+      <input type="hidden" name="id">
+      <div class="form-field full"><label for="project-name">Nombre de la obra *</label><input class="field" id="project-name" name="name" required maxlength="90" placeholder="Ej. Remodelación de vivienda"></div>
+      <div class="form-field"><label for="project-client">Cliente</label><select class="select" id="project-client" name="clientId"><option value="">Sin asignar</option></select></div>
+      <div class="form-field"><label for="project-location">Ubicación</label><input class="field" id="project-location" name="location" maxlength="70" placeholder="Ciudad o sector"></div>
+      <div class="form-field"><label for="project-date">Fecha de inicio *</label><input class="field" id="project-date" name="date" type="date" required></div>
+      <div class="form-field"><label for="project-status">Estado</label><select class="select" id="project-status" name="status"><option>Planificada</option><option>En ejecución</option><option>Pausada</option><option>Finalizada</option></select></div>
+      <div class="form-field"><label for="project-budget">Presupuesto (USD) *</label><input class="field" id="project-budget" name="budget" type="number" min="0" step="any" required placeholder="0.00"></div>
+      <div class="form-field"><label for="project-paid">Monto cobrado (USD)</label><input class="field" id="project-paid" name="paid" type="number" min="0" step="any" value="0"></div>
+      <div class="form-field"><label for="project-materials-budget">Presupuesto de materiales (USD)</label><input class="field" id="project-materials-budget" name="materialsBudget" type="number" min="0" step="any" value="0"></div>
+      <div class="form-field"><label for="project-materials-paid">Cobrado por materiales (USD)</label><input class="field" id="project-materials-paid" name="materialsPaid" type="number" min="0" step="any" value="0"></div>
+      <p class="card-hint full">Los importes se registran por separado y pueden superar entre sí los valores de presupuesto o cobro general.</p>
+      <div class="form-field full"><label for="project-notes">Detalles</label><textarea class="textarea" id="project-notes" name="notes" maxlength="400" placeholder="Descripción breve o próximos pasos"></textarea></div>
+      <div class="dialog-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar obra</button></div>
+    </form>
+  </dialog>
+  <dialog id="client-dialog">
+    <div class="dialog-head">
+      <div><h2 id="client-dialog-title">Registrar cliente</h2><p>El número identifica al cliente y debe ser único.</p></div>
+      <button class="close-btn" type="button" aria-label="Cerrar" data-close>×</button>
+    </div>
+    <form class="dialog-form" id="client-form">
+      <input type="hidden" name="id">
+      <div class="form-field"><label for="client-number">Número de cliente *</label><input class="field" id="client-number" name="number" type="text" inputmode="numeric" pattern="[0-9]+" maxlength="20" required placeholder="Ej. 1001"></div>
+      <div class="form-field"><label for="client-name">Nombre del cliente *</label><input class="field" id="client-name" name="name" required maxlength="90" placeholder="Nombre o razón social"></div>
+      <div class="form-field"><label for="client-phone">Teléfono</label><input class="field" id="client-phone" name="phone" type="tel" maxlength="30" placeholder="Opcional"></div>
+      <div class="form-field"><label for="client-email">Correo electrónico</label><input class="field" id="client-email" name="email" type="email" maxlength="100" placeholder="Opcional"></div>
+      <div class="dialog-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar cliente</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="note-dialog">
+    <div class="dialog-head">
+      <div><h2>Nueva nota</h2><p>Guarda un recordatorio para el equipo.</p></div>
+      <button class="close-btn" type="button" aria-label="Cerrar" data-close>×</button>
+    </div>
+    <form class="dialog-form" id="note-form">
+      <div class="form-field full"><label for="note-title">Título *</label><input class="field" id="note-title" name="title" required maxlength="70" placeholder="Ej. Confirmar entrega de materiales"></div>
+      <div class="form-field full"><label for="note-body">Nota</label><textarea class="textarea" id="note-body" name="body" maxlength="500" placeholder="Escribe los detalles..."></textarea></div>
+      <div class="dialog-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar nota</button></div>
+    </form>
+  </dialog>
+  <dialog id="material-dialog">
+    <div class="dialog-head">
+      <div><h2 id="material-dialog-title">Agregar material</h2><p>Registra un material y su unidad de medida.</p></div>
+      <button class="close-btn" type="button" aria-label="Cerrar" data-close>×</button>
+    </div>
+    <form class="dialog-form" id="material-form">
+      <input type="hidden" name="id">
+      <div class="form-field full"><label for="material-name">Nombre del material *</label><input class="field" id="material-name" name="name" required maxlength="90" placeholder="Ej. Cemento, pintura, arena"></div>
+      <div class="form-field"><label for="material-unit">Unidad *</label><select class="select" id="material-unit" name="unit" required><option value="kg">Kilogramos (kg)</option><option value="L">Litros (L)</option><option value="unidades">Unidades</option></select></div>
+      <div class="form-field"><label for="material-initial-stock">Stock inicial</label><input class="field" id="material-initial-stock" name="initialStock" type="number" min="0" step="0.01" value="0" required></div>
+      <div class="form-field full"><label for="material-unit-price">Precio unitario (USD) *</label><input class="field" id="material-unit-price" name="unitPrice" type="number" min="0" step="0.01" value="0" required></div>
+      <p class="card-hint full" id="material-form-hint">El stock inicial se guardará como una entrada. Luego podrás registrar entradas y salidas.</p>
+      <div class="dialog-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar material</button></div>
+    </form>
+  </dialog>
+  <dialog id="movement-dialog">
+    <div class="dialog-head">
+      <div><h2 id="movement-dialog-title">Registrar movimiento</h2><p id="movement-material-name"></p></div>
+      <button class="close-btn" type="button" aria-label="Cerrar" data-close>×</button>
+    </div>
+    <form class="dialog-form" id="movement-form">
+      <input type="hidden" name="materialId">
+      <div class="form-field"><label for="movement-type">Movimiento</label><select class="select" id="movement-type" name="type"><option value="entrada">Entrada</option><option value="salida">Salida</option></select></div>
+      <div class="form-field"><label for="movement-quantity">Cantidad *</label><input class="field" id="movement-quantity" name="quantity" type="number" min="0.01" step="0.01" required placeholder="0.00"></div>
+      <div class="form-field"><label for="movement-date">Fecha *</label><input class="field" id="movement-date" name="date" type="date" required></div>
+      <div class="form-field"><label for="movement-note">Detalle</label><input class="field" id="movement-note" name="note" maxlength="120" placeholder="Opcional"></div>
+      <div class="dialog-actions"><button class="btn" type="button" data-close>Cancelar</button><button class="btn btn-primary" type="submit">Guardar movimiento</button></div>
+    </form>
+  </dialog>
+  <script>
+    (async () => {
+      "use strict";
+      const STORAGE_KEY = "bamino-construcciones-crm-v1";
+      const STORAGE_TIME_KEY = `${STORAGE_KEY}-saved-at`;
+      const DATABASE_NAME = "bamino-construcciones-database";
+      const DATABASE_STORE = "app-data";
+      let database = null;
+      let databaseError = null;
+      let databaseSaveTimer;
+      let databaseWriteQueue = Promise.resolve();
+      let latestDatabaseSnapshot = null;
+      const openDatabase = () => new Promise((resolve, reject) => {
+        const request = indexedDB.open(DATABASE_NAME, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(DATABASE_STORE)) request.result.createObjectStore(DATABASE_STORE);
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error || new Error("No se pudo abrir la base de datos local."));
+        request.onblocked = () => reject(new Error("La base de datos está bloqueada por otra pestaña abierta."));
+      });
+      const readDatabaseState = (db) => new Promise((resolve, reject) => {
+        const transaction = db.transaction(DATABASE_STORE, "readonly");
+        const request = transaction.objectStore(DATABASE_STORE).get("state");
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error || new Error("No se pudieron leer los datos de la base local."));
+      });
+      try {
+        if (!("indexedDB" in window)) throw new Error("Este navegador no permite una base de datos local.");
+        database = await openDatabase();
+      } catch (error) {
+        databaseError = error;
+        console.error("Error al iniciar la base de datos local:", error);
+      }
+      const navItems = [
+        ["dashboard", "Panel", "⌂"],
+        ["projects", "Obras", "▤"],
+        ["clients", "Clientes", "♙"],
+        ["calendar", "Calendario", "▦"],
+        ["budgets", "Presupuestos", "◫"],
+        ["client-budget", "Presupuesto cliente", "▤"],
+        ["payments", "Cobros", "$"],
+        ["finance", "Finanzas", "↗"],
+        ["notes", "Notas", "▧"],
+        ["stats", "Estadísticas", "◷"],
+        ["inventory", "Inventario", "▦"],
+        ["materials-list", "Listado materiales", "▤"]
+      ];
+      const day = (offset) => {
+        const date = new Date();
+        date.setDate(date.getDate() + offset);
+        return date.toISOString().slice(0, 10);
+      };
+      const initialState = () => ({
+        projects: [
+          { id: crypto.randomUUID(), name: "Remodelación de vivienda", client: "Proyecto residencial", location: "Cuenca", date: day(2), status: "En ejecución", budget: 12800, paid: 6400, notes: "Acabados interiores y renovación de cocina." },
+          { id: crypto.randomUUID(), name: "Ampliación de local comercial", client: "Proyecto comercial", location: "Centro", date: day(6), status: "Planificada", budget: 18600, paid: 5000, notes: "Preparar cronograma de obra y materiales." },
+          { id: crypto.randomUUID(), name: "Diseño y obra de terraza", client: "Proyecto residencial", location: "Totoracocha", date: day(11), status: "En ejecución", budget: 7400, paid: 4200, notes: "Impermeabilización y estructura liviana." },
+          { id: crypto.randomUUID(), name: "Adecuación de oficinas", client: "Proyecto corporativo", location: "Cuenca", date: day(18), status: "Pausada", budget: 9200, paid: 2500, notes: "Pendiente aprobación de acabados." }
+        ],
+        notes: [
+          { id: crypto.randomUUID(), title: "Revisar cronograma semanal", body: "Confirmar avances y coordinar las entregas de materiales con cada frente de trabajo.", createdAt: new Date().toISOString() },
+          { id: crypto.randomUUID(), title: "Seguimiento de presupuestos", body: "Dar seguimiento a propuestas pendientes y actualizar los próximos pasos.", createdAt: new Date().toISOString() }
+        ],
+        goals: { works: { value: 3, target: 5, label: "Obras en ejecución" }, collections: { value: 2, target: 4, label: "Cobros completados" } },
+        inventory: [],
+        documents: { clientBudget: null, materialsList: null }
+      });
+      let state;
+      let databaseState = null;
+      let latestSavedAt = 0;
+      if (database) {
+        try {
+          databaseState = await readDatabaseState(database);
+        } catch (error) {
+          databaseError = error;
+          console.error("Error al recuperar la base de datos local:", error);
+        }
+      }
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const localState = saved ? JSON.parse(saved) : null;
+        const localSavedAt = Number(localStorage.getItem(STORAGE_TIME_KEY)) || 0;
+        const databaseSnapshot = databaseState?.state || databaseState;
+        const databaseSavedAt = databaseState?.state ? Number(databaseState.savedAt) || 0 : 0;
+        latestSavedAt = Math.max(localSavedAt, databaseSavedAt);
+        state = databaseSnapshot && databaseSavedAt > localSavedAt
+          ? databaseSnapshot
+          : localState || databaseSnapshot || initialState();
+        if (!state || !Array.isArray(state.projects) || !Array.isArray(state.notes) || !state.goals) throw new Error("Los datos guardados no tienen un formato válido.");
+      } catch (error) {
+        state = initialState();
+        window.setTimeout(() => notify("No se pudieron leer los datos guardados. Se cargó una sesión nueva."), 0);
+        console.error("Error al leer los datos guardados:", error);
+      }
+      if (!Array.isArray(state.inventory)) state.inventory = [];
+      if (!state.documents || typeof state.documents !== "object") state.documents = {};
+      if (!state.documents.clientBudget || typeof state.documents.clientBudget !== "object") state.documents.clientBudget = null;
+      if (!state.documents.materialsList || typeof state.documents.materialsList !== "object") state.documents.materialsList = null;
+      let needsClientMigration = !Array.isArray(state.clients);
+      if (!Array.isArray(state.clients)) state.clients = [];
+      const clientNumberKey = (value) => String(value ?? "").trim().replace(/^0+(?=\d)/, "");
+      const clientNameKey = (value) => String(value ?? "").trim().toLocaleLowerCase("es");
+      const nextClientNumber = () => {
+        const max = state.clients.reduce((highest, client) => {
+          const number = Number(client.number);
+          return Number.isSafeInteger(number) && number > highest ? number : highest;
+        }, 0);
+        return String(max + 1);
+      };
+      state.projects.forEach((project) => {
+        const linkedClient = state.clients.find((client) => client.id === project.clientId);
+        if (linkedClient) return;
+        const legacyName = String(project.client || "").trim();
+        if (legacyName) {
+          let client = state.clients.find((item) => clientNameKey(item.name) === clientNameKey(legacyName));
+          if (!client) {
+            client = { id: crypto.randomUUID(), number: nextClientNumber(), name: legacyName, phone: "", email: "" };
+            state.clients.push(client);
+          }
+          project.clientId = client.id;
+        } else {
+          project.clientId = "";
+        }
+        delete project.client;
+        needsClientMigration = true;
+      });
+      state.inventory.forEach((material) => {
+        if (!Number.isFinite(Number(material.unitPrice))) material.unitPrice = 0;
+      });
+      let currentPage = "dashboard";
+      let calendarDate = new Date();
+      let toastTimer;
+      const content = document.getElementById("content");
+      const navigation = document.getElementById("navigation");
+      const projectDialog = document.getElementById("project-dialog");
+      const clientDialog = document.getElementById("client-dialog");
+      const clientForm = document.getElementById("client-form");
+      const noteDialog = document.getElementById("note-dialog");
+      const projectForm = document.getElementById("project-form");
+      const materialDialog = document.getElementById("material-dialog");
+      const materialForm = document.getElementById("material-form");
+      const movementDialog = document.getElementById("movement-dialog");
+      const movementForm = document.getElementById("movement-form");
+      const currency = new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+      const fmtMoney = (value) => currency.format(Number(value) || 0);
+      const parseDate = (value) => new Date(`${value}T12:00:00`);
+      const fmtDate = (value, options = { day: "numeric", month: "short" }) =>
+        value ? new Intl.DateTimeFormat("es-EC", options).format(parseDate(value)) : "Sin fecha";
+      const safe = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+      const activeProjects = () => state.projects.filter((project) => project.status !== "Finalizada");
+      const total = (key) => state.projects.reduce((sum, project) => sum + (Number(project[key]) || 0), 0);
+      const balance = (project) => Math.max(0, Number(project.budget) - Number(project.paid));
+      const statusClass = (status) => ({
+        "En ejecución": "active", "Planificada": "planned", "Pausada": "paused", "Finalizada": "done"
+      })[status] || "paused";
+      const statusBadge = (status) => `<span class="status status-${statusClass(status)}">${safe(status)}</span>`;
+      const clientForProject = (project) => state.clients.find((client) => client.id === project.clientId);
+      const saveDatabaseSnapshot = (snapshot) => {
+        if (!database) return;
+        databaseWriteQueue = databaseWriteQueue.then(() => new Promise((resolve, reject) => {
+          const transaction = database.transaction(DATABASE_STORE, "readwrite");
+          transaction.objectStore(DATABASE_STORE).put(snapshot, "state");
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error || new Error("No se pudieron guardar los datos en la base local."));
+          transaction.onabort = () => reject(transaction.error || new Error("Se canceló el guardado en la base local."));
+        })).catch((error) => {
+          console.error("Error al guardar la base de datos local:", error);
+          notify("Error al guardar en la base local. Descarga un respaldo para proteger tus datos.");
+        });
+      };
+      const flushDatabaseSave = () => {
+        window.clearTimeout(databaseSaveTimer);
+        if (latestDatabaseSnapshot) {
+          const snapshot = latestDatabaseSnapshot;
+          latestDatabaseSnapshot = null;
+          saveDatabaseSnapshot(snapshot);
+        }
+      };
+      function saveDocumentDraft(page = currentPage) {
+        if (page === "client-budget") {
+          const sheet = content.querySelector(".client-budget-sheet");
+          if (!sheet) return;
+          state.documents.clientBudget = {
+            number: sheet.querySelector("#presupuestoNum").value,
+            date: sheet.querySelector("#fecha").value,
+            customer: sheet.querySelector("#senores").value,
+            address: sheet.querySelector("#domicilio").value,
+            cash: sheet.querySelector("#contado").checked,
+            installments: sheet.querySelector("#ctaCte").checked,
+            total: sheet.querySelector("#total").value,
+            deposit: sheet.querySelector("#valorDeclarado").value,
+            items: [...sheet.querySelectorAll("#itemsBody tr")].map((row) => ({
+              quantity: row.querySelector(".cant").value,
+              description: row.querySelector(".desc").value,
+              amount: row.querySelector(".importe").value
+            }))
+          };
+          persist();
+          return;
+        }
+        if (page === "materials-list") {
+          const sheet = content.querySelector(".materials-list-sheet");
+          if (!sheet) return;
+          state.documents.materialsList = {
+            tracking: sheet.querySelector('[data-material-list-field="tracking"]').value,
+            date: sheet.querySelector('[data-material-list-field="date"]').value,
+            client: sheet.querySelector('[data-material-list-field="client"]').value,
+            project: sheet.querySelector('[data-material-list-field="project"]').value,
+            notes: sheet.querySelector('[data-material-list-field="notes"]').value,
+            rows: [...sheet.querySelectorAll("#materials-list-rows tr")].map((row) => ({
+              product: row.querySelector('input[type="text"]').value,
+              quantity: row.querySelector('input[type="number"]').value,
+              unit: row.querySelector("select").value
+            }))
+          };
+          persist();
+        }
+      }
+      function downloadBackup() {
+        const backup = {
+          format: "bamino-construcciones-backup",
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          data: state
+        };
+        const file = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `respaldo-bamino-${day(0)}.json`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        notify("Respaldo descargado. Guárdalo fuera de este dispositivo.");
+      }
+      function isValidBackup(value) {
+        return value?.format === "bamino-construcciones-backup"
+          && value.version === 1
+          && value.data
+          && Array.isArray(value.data.projects)
+          && Array.isArray(value.data.clients)
+          && Array.isArray(value.data.notes)
+          && Array.isArray(value.data.inventory)
+          && value.data.goals
+          && typeof value.data.goals === "object";
+      }
+      async function restoreBackup(file) {
+        const backup = JSON.parse(await file.text());
+        if (!isValidBackup(backup)) throw new Error("El archivo no contiene un respaldo válido de Bamino Construcciones.");
+        if (!window.confirm("Restaurar el respaldo reemplazará los datos actuales por los datos del archivo. ¿Deseas continuar?")) return;
+        state = backup.data;
+        if (!state.documents || typeof state.documents !== "object") state.documents = {};
+        if (!state.documents.clientBudget || typeof state.documents.clientBudget !== "object") state.documents.clientBudget = null;
+        if (!state.documents.materialsList || typeof state.documents.materialsList !== "object") state.documents.materialsList = null;
+        persist();
+        render();
+        notify("Respaldo restaurado correctamente.");
+      }
+      const persist = () => {
+        let snapshot;
+        try {
+          snapshot = JSON.parse(JSON.stringify(state));
+        } catch (error) {
+          console.error("No se pudieron preparar los datos para guardarlos:", error);
+          notify("No se pudieron preparar los datos para guardarlos.");
+          return false;
+        }
+        const savedAt = latestSavedAt = Math.max(Date.now(), latestSavedAt + 1);
+        let localStorageError = null;
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+          localStorage.setItem(STORAGE_TIME_KEY, String(savedAt));
+        } catch (error) {
+          localStorageError = error;
+          console.error("Error al guardar la copia local de los datos:", error);
+        }
+        if (database) {
+          latestDatabaseSnapshot = { state: snapshot, savedAt };
+          window.clearTimeout(databaseSaveTimer);
+          databaseSaveTimer = window.setTimeout(flushDatabaseSave, 150);
+        } else if (localStorageError) {
+          notify("No se pudieron guardar los cambios. Descarga un respaldo y libera espacio del navegador.");
+          return false;
+        }
+        return !localStorageError || Boolean(database);
+      };
+      function notify(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.remove("show"), 3000);
+      }
+      function setPage(page) {
+        if (!navItems.some(([id]) => id === page)) return;
+        currentPage = page;
+        render();
+      }
+      function renderNav() {
+        navigation.innerHTML = navItems.map(([id, label, icon]) =>
+          `<button class="nav-item${currentPage === id ? " active" : ""}" type="button" data-page="${id}"${currentPage === id ? ' aria-current="page"' : ""}><span class="nav-icon" aria-hidden="true">${icon}</span>${label}</button>`
+        ).join("");
+      }
+      function heading(kicker, title, description, action = "") {
+        return `<div class="page-heading"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p class="subheading">${description}</p></div>${action}</div>`;
+      }
+      function metric(label, value, foot, icon) {
+        return `<div class="metric"><div class="metric-top"><span>${label}</span><span class="metric-icon" aria-hidden="true">${icon}</span></div><div class="metric-value">${value}</div><div class="metric-foot">${foot}</div></div>`;
+      }
+      function projectRows(projects) {
+        if (!projects.length) return `<div class="empty-state">Todavía no hay obras aquí. Registra una para comenzar.</div>`;
+        return `<div class="project-list">${projects.map((project) => {
+          const date = parseDate(project.date);
+          return `<div class="project-row">
+            <div class="date-tile"><span class="date-day">${date.getDate()}</span><span class="date-month">${new Intl.DateTimeFormat("es-EC", { month: "short" }).format(date).replace(".", "")}</span></div>
+            <div><div class="project-name">${safe(project.name)}</div><div class="project-meta">${safe(project.location || "Ubicación pendiente")} · ${statusBadge(project.status)}</div></div>
+            <div class="project-amount">${fmtMoney(project.budget)}</div>
+          </div>`;
+        }).join("")}</div>`;
+      }
+      function dashboard() {
+        const upcoming = [...activeProjects()].sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
+        const due = total("budget") - total("paid");
+        const running = state.projects.filter((project) => project.status === "En ejecución").length;
+        return `${heading("Gestión de obras", "Controla cada avance.", "Un vistazo claro a las obras, los presupuestos y los cobros de tu equipo.")}
+          <section class="metrics" aria-label="Resumen">
+            ${metric("Obras activas", running, `${state.projects.length} obras registradas`, "▤")}
+            ${metric("Presupuesto contratado", fmtMoney(total("budget")), "suma de las obras registradas", "◫")}
+            ${metric("Por cobrar", fmtMoney(due), "saldo pendiente de clientes", "$")}
+            ${metric("Cobrado", fmtMoney(total("paid")), "pagos registrados", "✓")}
+          </section>
+          <div class="dashboard-grid">
+            <section class="card"><div class="card-head"><div><h2 class="card-title">Próximas obras</h2><div class="card-hint">Fechas de inicio y estado de cada proyecto</div></div><button class="btn btn-quiet" type="button" data-page="projects">Ver todas →</button></div>${projectRows(upcoming)}</section>
+            <div class="stack">
+              <section class="card"><div class="card-head"><div><h2 class="card-title">Objetivos del equipo</h2><div class="card-hint">Actualiza el progreso con los controles</div></div></div>${Object.entries(state.goals).map(([key, goal]) => goalMarkup(key, goal)).join("")}</section>
+              <section class="card"><div class="card-head"><div><h2 class="card-title">Atajos</h2><div class="card-hint">Acciones frecuentes</div></div></div><div class="stack"><button class="btn" type="button" data-new-project>＋ Registrar una obra</button><button class="btn" type="button" data-page="payments">Revisar cobros pendientes →</button><button class="btn" type="button" data-page="calendar">Abrir calendario →</button></div></section>
+            </div>
+          </div>`;
+      }
+      function goalMarkup(key, goal) {
+        const target = Math.max(1, Number(goal.target) || 1);
+        const value = Math.max(0, Number(goal.value) || 0);
+        const percent = Math.min(100, Math.round(value / target * 100));
+        return `<div class="goal"><div class="goal-label"><strong>${safe(goal.label)}</strong><span>${value} / ${target}</span></div><div class="progress" role="progressbar" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><span style="width:${percent}%"></span></div><div class="goal-controls"><button class="tiny-btn" type="button" data-goal="${key}" data-delta="-1" aria-label="Disminuir ${safe(goal.label)}">−</button><button class="tiny-btn" type="button" data-goal="${key}" data-delta="1" aria-label="Aumentar ${safe(goal.label)}">＋</button></div></div>`;
+      }
+      function projectsPage() {
+        const action = `<button class="btn btn-primary" type="button" data-new-project>＋ Nueva obra</button>`;
+        const rows = [...state.projects].sort((a, b) => a.date.localeCompare(b.date));
+        return `${heading("Proyectos", "Obras", "Organiza fechas, responsables, estados y valores de cada proyecto.", action)}
+          <section class="card"><div class="toolbar"><div class="toolbar-left"><input class="field search" id="project-search" type="search" placeholder="Buscar obra, cliente o ubicación..." aria-label="Buscar obras"><select class="select" id="project-filter" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>En ejecución</option><option>Planificada</option><option>Pausada</option><option>Finalizada</option></select></div><span class="card-hint">${state.projects.length} obras registradas</span></div><div id="projects-table">${projectTable(rows)}</div></section>`;
+      }
+      function projectTable(projects) {
+        if (!projects.length) return `<div class="empty-state">No se encontraron obras con esos filtros.</div>`;
+        return `<div class="table-wrap"><table><thead><tr><th>OBRA</th><th>INICIO</th><th>ESTADO</th><th>PRESUPUESTO</th><th>POR COBRAR</th><th></th></tr></thead><tbody>${projects.map((p) =>
+          `<tr><td><div class="table-main">${safe(p.name)}</div><div class="table-sub">${safe(clientForProject(p)?.name || "Cliente pendiente")} · ${safe(p.location || "Ubicación pendiente")}</div></td><td>${fmtDate(p.date, { day: "numeric", month: "short", year: "numeric" })}</td><td>${statusBadge(p.status)}</td><td class="amount">${fmtMoney(p.budget)}</td><td class="amount">${fmtMoney(balance(p))}</td><td><div class="table-actions"><button class="text-link" type="button" data-edit="${p.id}">Editar</button><button class="text-link btn-danger" type="button" data-delete="${p.id}">Eliminar</button></div></td></tr>`
+        ).join("")}</tbody></table></div>`;
+      }
+      function clientsPage() {
+        const clients = [...state.clients].sort((a, b) => Number(a.number) - Number(b.number) || a.name.localeCompare(b.name, "es"));
+        const works = state.projects.length;
+        const action = `<button class="btn btn-primary" type="button" data-new-client>＋ Nuevo cliente</button>`;
+        return `${heading("Cartera de clientes", "Clientes", "Cada cliente tiene un número único y un resumen de sus obras y valores.", action)}
+          <section class="metrics" aria-label="Resumen de clientes">
+            ${metric("Clientes registrados", clients.length, "identificados por número único", "♙")}
+            ${metric("Obras vinculadas", state.projects.filter((project) => project.clientId).length, `${works} obras registradas`, "▤")}
+            ${metric("Monto contratado", fmtMoney(total("budget")), "suma de todas las obras", "◫")}
+            ${metric("Saldo por cobrar", fmtMoney(total("budget") - total("paid")), "pendiente en todas las obras", "$")}
+          </section>
+          <section class="card"><div class="toolbar"><div class="toolbar-left"><input class="field search" id="client-search" type="search" placeholder="Buscar por número, nombre o contacto..." aria-label="Buscar clientes"></div><span class="card-hint">${clients.length} clientes registrados</span></div><div id="client-list">${clientCards(clients)}</div></section>`;
+      }
+      function clientCards(clients) {
+        if (!clients.length) return `<div class="empty-state">No hay clientes registrados todavía. Agrega uno para organizar sus obras y montos.</div>`;
+        return `<div class="client-list">${clients.map((client) => {
+          const projects = state.projects.filter((project) => project.clientId === client.id)
+            .sort((a, b) => a.date.localeCompare(b.date));
+          const budget = projects.reduce((sum, project) => sum + (Number(project.budget) || 0), 0);
+          const paid = projects.reduce((sum, project) => sum + (Number(project.paid) || 0), 0);
+          const due = projects.reduce((sum, project) => sum + balance(project), 0);
+          return `<article class="client-card">
+            <div class="client-card-head">
+              <div class="client-identity"><div class="client-number">${safe(client.number)}</div><div><div class="client-name">${safe(client.name)}</div><div class="client-contact">${safe([client.phone, client.email].filter(Boolean).join(" · ") || "Sin datos de contacto")}</div></div></div>
+              <div class="client-actions"><button class="text-link" type="button" data-client-project="${client.id}">＋ Nueva obra</button><button class="text-link" type="button" data-edit-client="${client.id}">Editar</button><button class="text-link btn-danger" type="button" data-delete-client="${client.id}"${projects.length ? " disabled title=\"Este cliente tiene obras vinculadas\"" : ""}>Eliminar</button></div>
+            </div>
+            <div class="client-totals">
+              <div class="client-total"><span>${projects.length} ${projects.length === 1 ? "obra" : "obras"}</span><strong>${fmtMoney(budget)} contratado</strong></div>
+              <div class="client-total"><span>Total cobrado</span><strong>${fmtMoney(paid)}</strong></div>
+              <div class="client-total"><span>Saldo pendiente</span><strong>${fmtMoney(due)}</strong></div>
+            </div>
+            <div class="client-works"><h3 class="client-works-title">Obras de ${safe(client.name)}</h3>
+              ${projects.length ? `<div class="table-wrap"><table><thead><tr><th>OBRA</th><th>ESTADO</th><th>MONTO</th><th>COBRADO</th><th>SALDO</th><th></th></tr></thead><tbody>${projects.map((project) => `<tr><td class="table-main">${safe(project.name)}</td><td>${statusBadge(project.status)}</td><td class="amount">${fmtMoney(project.budget)}</td><td class="amount">${fmtMoney(project.paid)}</td><td class="amount">${fmtMoney(balance(project))}</td><td><button class="text-link" type="button" data-edit="${project.id}">Editar</button></td></tr>`).join("")}</tbody></table></div>` : `<div class="card-hint">Todavía no hay obras vinculadas a este cliente.</div>`}
+            </div>
+          </article>`;
+        }).join("")}</div>`;
+      }
+      function calendarPage() {
+        const year = calendarDate.getFullYear();
+        const month = calendarDate.getMonth();
+        const firstWeekday = new Date(year, month, 1).getDay();
+        const offset = (firstWeekday + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const prevMonthDays = new Date(year, month, 0).getDate();
+        const today = new Date();
+        const monthTitle = new Intl.DateTimeFormat("es-EC", { month: "long", year: "numeric" }).format(calendarDate);
+        const cells = [];
+        for (let i = 0; i < 42; i++) {
+          let dayNum, cellMonth = month, cellYear = year, muted = false;
+          if (i < offset) { dayNum = prevMonthDays - offset + i + 1; cellMonth--; muted = true; }
+          else if (i >= offset + daysInMonth) { dayNum = i - offset - daysInMonth + 1; cellMonth++; muted = true; }
+          else dayNum = i - offset + 1;
+          if (cellMonth < 0) { cellMonth = 11; cellYear--; }
+          if (cellMonth > 11) { cellMonth = 0; cellYear++; }
+          const dateKey = `${cellYear}-${String(cellMonth + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
+          const events = state.projects.filter((p) => p.date === dateKey);
+          const isToday = today.getFullYear() === cellYear && today.getMonth() === cellMonth && today.getDate() === dayNum;
+          cells.push(`<div class="calendar-cell${muted ? " muted" : ""}"><span class="calendar-num${isToday ? " today" : ""}">${dayNum}</span>${events.slice(0, 2).map((p) => `<div class="calendar-event${p.status === "Planificada" ? " planned" : ""}" title="${safe(p.name)}">${safe(p.name)}</div>`).join("")}${events.length > 2 ? `<div class="calendar-event">+${events.length - 2} más</div>` : ""}</div>`);
+        }
+        return `${heading("Planificación", "Calendario de obras", "Consulta las fechas de inicio de todos tus proyectos.")}
+          <section class="card"><div class="card-head"><div class="calendar-head"><button class="btn" type="button" data-month="-1" aria-label="Mes anterior">‹</button><div class="calendar-month">${monthTitle}</div><button class="btn" type="button" data-month="1" aria-label="Mes siguiente">›</button></div><button class="btn btn-quiet" type="button" data-month="today">Hoy</button></div>
+          <div class="calendar-grid">${["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((label) => `<div class="calendar-label">${label}</div>`).join("")}${cells.join("")}</div></section>`;
+      }
+      function budgetsPage() {
+        const projects = [...state.projects].sort((a, b) => b.budget - a.budget);
+        return `${heading("Control financiero", "Presupuestos", "Consulta el valor contratado y el avance de cobro de cada obra.")}
+          <section class="finance-summary"><div class="finance-box"><span>Presupuesto total</span><strong>${fmtMoney(total("budget"))}</strong></div><div class="finance-box"><span>Cobrado</span><strong>${fmtMoney(total("paid"))}</strong></div><div class="finance-box"><span>Saldo por cobrar</span><strong>${fmtMoney(total("budget") - total("paid"))}</strong></div></section>
+          <section class="materials-summary" aria-label="Resumen de materiales"><div class="finance-box"><span>Presupuesto de materiales</span><strong>${fmtMoney(total("materialsBudget"))}</strong></div><div class="finance-box"><span>Cobrado por materiales</span><strong>${fmtMoney(total("materialsPaid"))}</strong></div></section>
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Detalle por obra</h2><div class="card-hint">Los importes de materiales son un desglose de los totales generales.</div></div></div>
+          ${projects.length ? `<div class="table-wrap"><table><thead><tr><th>OBRA</th><th>ESTADO</th><th>PRESUPUESTO</th><th>COBRADO</th><th>PRESUP. MATERIALES</th><th>COBRADO MATERIALES</th><th>PROGRESO</th></tr></thead><tbody>${projects.map((p) => {
+            const percent = p.budget > 0 ? Math.min(100, Math.round(p.paid / p.budget * 100)) : 0;
+            return `<tr><td><div class="table-main">${safe(p.name)}</div><div class="table-sub">${safe(clientForProject(p)?.name || "Cliente pendiente")}</div></td><td>${statusBadge(p.status)}</td><td class="amount">${fmtMoney(p.budget)}</td><td class="amount">${fmtMoney(p.paid)}</td><td class="amount">${fmtMoney(p.materialsBudget)}</td><td class="amount">${fmtMoney(p.materialsPaid)}</td><td style="min-width:120px"><div class="goal-label"><span>${percent}%</span><span>${fmtMoney(balance(p))} pendiente</span></div><div class="progress"><span style="width:${percent}%"></span></div></td></tr>`;
+          }).join("")}</tbody></table></div>` : `<div class="empty-state">Registra una obra para consultar sus presupuestos.</div>`}</section>`;
+      }
+      function paymentsPage() {
+        const projects = [...state.projects].filter((p) => balance(p) > 0).sort((a, b) => b.date.localeCompare(a.date));
+        const clientsWithBalance = new Set(projects.map((project) => project.clientId).filter(Boolean)).size;
+        return `${heading("Seguimiento", "Cobros pendientes", "Lleva un control sencillo de los saldos por cobrar.")}
+          <section class="metrics">${metric("Saldo pendiente", fmtMoney(total("budget") - total("paid")), "en todas las obras registradas", "$")}${metric("Clientes con saldo", clientsWithBalance, "clientes con obras pendientes", "◷")}</section>
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Saldos por obra</h2><div class="card-hint">Edita una obra para registrar un abono recibido.</div></div></div>
+          ${projects.length ? `<div class="table-wrap"><table><thead><tr><th>OBRA</th><th>CLIENTE</th><th>CONTRATADO</th><th>COBRADO</th><th>SALDO</th><th></th></tr></thead><tbody>${projects.map((p) => `<tr><td><div class="table-main">${safe(p.name)}</div><div class="table-sub">${fmtDate(p.date, { day: "numeric", month: "short", year: "numeric" })}</div></td><td>${safe(clientForProject(p)?.name || "Pendiente")}</td><td>${fmtMoney(p.budget)}</td><td>${fmtMoney(p.paid)}</td><td class="amount">${fmtMoney(balance(p))}</td><td><button class="text-link" type="button" data-edit="${p.id}">Registrar pago</button></td></tr>`).join("")}</tbody></table></div>` : `<div class="empty-state">No hay saldos pendientes. ¡Todo al día!</div>`}</section>`;
+      }
+      function financePage() {
+        const budgets = total("budget"), paid = total("paid"), due = budgets - paid;
+        const months = [];
+        const now = new Date();
+        for (let i = 5; i >= 0; i--) {
+          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const monthProjects = state.projects.filter((p) => {
+            const d = parseDate(p.date);
+            return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth();
+          });
+          months.push({ label: new Intl.DateTimeFormat("es-EC", { month: "short" }).format(date).replace(".", ""), value: monthProjects.reduce((sum, p) => sum + Number(p.budget || 0), 0) });
+        }
+        const maxValue = Math.max(1, ...months.map((m) => m.value));
+        return `${heading("Resumen financiero", "Finanzas", "Una vista general de los valores registrados en tus proyectos.")}
+          <div class="finance-summary"><div class="finance-box"><span>Valor contratado</span><strong>${fmtMoney(budgets)}</strong></div><div class="finance-box"><span>Total cobrado</span><strong>${fmtMoney(paid)}</strong></div><div class="finance-box"><span>Por cobrar</span><strong>${fmtMoney(due)}</strong></div></div>
+          <section class="materials-summary" aria-label="Resumen financiero de materiales"><div class="finance-box"><span>Presupuesto de materiales</span><strong>${fmtMoney(total("materialsBudget"))}</strong></div><div class="finance-box"><span>Cobrado por materiales</span><strong>${fmtMoney(total("materialsPaid"))}</strong></div></section>
+          <div class="stats-grid"><section class="card"><div class="card-head"><div><h2 class="card-title">Obras iniciadas</h2><div class="card-hint">Presupuestos de los últimos seis meses</div></div></div><div class="bar-chart" role="img" aria-label="Gráfico de presupuestos por mes">${months.map((m) => `<div class="bar-col"><div class="bar" title="${fmtMoney(m.value)}" style="height:${Math.max(4, Math.round(m.value / maxValue * 100))}%"></div><span class="bar-label">${safe(m.label)}</span></div>`).join("")}</div></section>
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Resumen de cartera</h2><div class="card-hint">Distribución de valores registrados</div></div></div>
+          ${[["Cobrado", paid, budgets], ["Saldo pendiente", due, budgets]].map(([label, amount, base]) => `<div class="goal"><div class="goal-label"><strong>${label}</strong><span>${fmtMoney(amount)}</span></div><div class="progress"><span style="width:${base ? Math.min(100, amount / base * 100) : 0}%;background:${label === "Cobrado" ? "var(--green)" : "var(--gold)"}"></span></div></div>`).join("")}
+          <p class="card-hint" style="line-height:1.6;margin-top:18px">Los valores se calculan a partir de los presupuestos y pagos que registres en cada obra.</p></section></div>`;
+      }
+      function notesPage() {
+        const action = `<button class="btn btn-primary" type="button" data-new-note>＋ Nueva nota</button>`;
+        const notes = [...state.notes].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        return `${heading("Equipo", "Notas", "Recordatorios y apuntes de trabajo, guardados en este navegador.", action)}
+          ${notes.length ? `<div class="note-grid">${notes.map((note) => `<article class="note-card"><button class="note-delete" type="button" data-delete-note="${note.id}" aria-label="Eliminar nota ${safe(note.title)}">×</button><div class="note-title">${safe(note.title)}</div><div class="note-body">${safe(note.body || "Sin detalles.")}</div><div class="note-date">${new Intl.DateTimeFormat("es-EC", { dateStyle: "medium" }).format(new Date(note.createdAt))}</div></article>`).join("")}</div>` : `<section class="card"><div class="empty-state">No hay notas guardadas. Crea una para recordar los próximos pasos.</div></section>`}`;
+      }
+      function statsPage() {
+        const running = state.projects.filter((p) => p.status === "En ejecución").length;
+        const done = state.projects.filter((p) => p.status === "Finalizada").length;
+        const planned = state.projects.filter((p) => p.status === "Planificada").length;
+        const paused = state.projects.filter((p) => p.status === "Pausada").length;
+        const average = state.projects.length ? total("budget") / state.projects.length : 0;
+        const completion = total("budget") ? Math.round(total("paid") / total("budget") * 100) : 0;
+        const rows = [["En ejecución", running], ["Planificadas", planned], ["Pausadas", paused], ["Finalizadas", done]];
+        const max = Math.max(1, ...rows.map((row) => row[1]));
+        return `${heading("Actividad", "Estadísticas", "Indicadores calculados a partir de las obras registradas.")}
+          <section class="metrics">${metric("Total de obras", state.projects.length, "proyectos registrados", "▤")}${metric("En ejecución", running, "obras en curso", "↗")}${metric("Presupuesto promedio", fmtMoney(average), "por obra registrada", "◫")}${metric("Cobro del total", `${completion}%`, "proporción del presupuesto cobrada", "✓")}</section>
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Obras por estado</h2><div class="card-hint">Distribución de la cartera de proyectos</div></div></div>${rows.map(([label, value]) => `<div class="goal"><div class="goal-label"><strong>${label}</strong><span>${value} ${value === 1 ? "obra" : "obras"}</span></div><div class="progress"><span style="width:${Math.round(value / max * 100)}%"></span></div></div>`).join("")}</section>`;
+      }
+      function inventoryPage() {
+        const units = ["kg", "L", "unidades"];
+        const qtyFormat = new Intl.NumberFormat("es-EC", { maximumFractionDigits: 2 });
+        const unitPriceFormat = new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const action = `<button class="btn btn-primary" type="button" data-new-material>＋ Agregar material</button>`;
+        const materials = [...state.inventory].sort((a, b) => a.name.localeCompare(b.name, "es"));
+        const inventoryValue = state.inventory.reduce((sum, material) => sum + (Number(material.stock) || 0) * (Number(material.unitPrice) || 0), 0);
+        const movements = state.inventory.flatMap((material) => (material.movements || []).map((movement) => ({ ...movement, material })))
+          .sort((a, b) => b.date.localeCompare(a.date));
+        return `${heading("Control de stock", "Inventario", "Registra materiales y controla sus existencias mediante entradas y salidas.", action)}
+          <section class="materials-summary" aria-label="Valor del inventario"><div class="finance-box"><span>Valor total del inventario</span><strong>${unitPriceFormat.format(inventoryValue)}</strong></div><div class="finance-box"><span>Materiales registrados</span><strong>${materials.length}</strong></div></section>
+          <section class="inventory-metrics">${units.map((unit) => {
+            const quantity = state.inventory.filter((item) => item.unit === unit).reduce((sum, item) => sum + (Number(item.stock) || 0), 0);
+            return `<div class="finance-box"><span>Stock total (${unit})</span><strong>${qtyFormat.format(quantity)}</strong></div>`;
+          }).join("")}</section>
+          <section class="card"><div class="card-head"><div><h2 class="card-title">Materiales disponibles</h2><div class="card-hint">${materials.length} materiales registrados</div></div></div>
+          ${materials.length ? `<div class="table-wrap"><table><thead><tr><th>MATERIAL</th><th>UNIDAD</th><th>STOCK DISPONIBLE</th><th>PRECIO UNITARIO</th><th>VALOR TOTAL</th><th>ACCIONES</th></tr></thead><tbody>${materials.map((material) => {
+            const stock = Number(material.stock) || 0;
+            const unitPrice = Number(material.unitPrice) || 0;
+            return `<tr><td class="table-main">${safe(material.name)}</td><td>${safe(material.unit)}</td><td class="amount">${qtyFormat.format(stock)} ${safe(material.unit)}</td><td class="amount">${unitPriceFormat.format(unitPrice)}</td><td class="amount">${unitPriceFormat.format(stock * unitPrice)}</td><td><div class="stock-actions"><button class="text-link stock-entry" type="button" data-stock-move="${material.id}" data-movement-type="entrada">＋ Entrada</button><button class="text-link stock-exit" type="button" data-stock-move="${material.id}" data-movement-type="salida">− Salida</button><button class="text-link" type="button" data-edit-material="${material.id}">Editar</button><button class="text-link btn-danger" type="button" data-delete-material="${material.id}">Eliminar</button></div></td></tr>`;
+          }).join("")}</tbody></table></div>` : `<div class="empty-state">Todavía no hay materiales. Agrega uno para comenzar a controlar el stock.</div>`}</section>
+          <section class="card" style="margin-top:17px"><div class="card-head"><div><h2 class="card-title">Movimientos recientes</h2><div class="card-hint">Historial de entradas y salidas registradas</div></div></div>
+          ${movements.length ? `<div class="table-wrap"><table><thead><tr><th>FECHA</th><th>MATERIAL</th><th>MOVIMIENTO</th><th>CANTIDAD</th><th>DETALLE</th></tr></thead><tbody>${movements.map(({ material, ...movement }) => `<tr><td>${fmtDate(movement.date, { day: "numeric", month: "short", year: "numeric" })}</td><td class="table-main">${safe(material.name)}</td><td>${movement.type === "entrada" ? "Entrada" : "Salida"}</td><td class="amount">${movement.type === "entrada" ? "+" : "−"}${qtyFormat.format(Number(movement.quantity) || 0)} ${safe(material.unit)}</td><td>${safe(movement.note || "—")}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty-state">Aquí aparecerá el historial cuando registres movimientos.</div>`}</section>`;
+      }
+      function clientBudgetPage() {
+        const draft = state.documents.clientBudget || {};
+        const items = Array.isArray(draft.items) ? draft.items : [];
+        const itemRows = Array.from({ length: Math.max(15, items.length) }, (_, index) => {
+          const item = items[index] || {};
+          return `<tr>
+            <td class="input-cell"><input type="number" min="0" value="${safe(item.quantity ?? "0")}" class="cant" aria-label="Cantidad"></td>
+            <td class="input-cell"><input type="text" value="${safe(item.description || "")}" class="desc" aria-label="Descripción"></td>
+            <td class="input-cell"><input type="number" min="0" step="any" value="${safe(item.amount ?? "0")}" class="importe" aria-label="Importe"></td>
+          </tr>`;
+        }).join("");
+        return `${heading("Documentos", "Presupuesto cliente", "Completa, calcula e imprime el presupuesto para tu cliente.")}
+          <section class="client-budget-sheet" aria-label="Presupuesto para cliente">
+            <header class="budget-header">
+              <div class="budget-logo">
+                <h2>Bambino Construcciones</h2>
+                <small>De Marcos Gabriel Digiano</small><br>
+                <small>Todo para tu construcción</small><br>
+                <small>Cel. 2281 323926 - 7300 - Azul (Bs. As.)</small>
+              </div>
+              <div class="budget-header-right">
+                <div><strong>PRESUPUESTO</strong></div>
+                <div><small>DOCUMENTO NO VÁLIDO COMO FACTURA</small></div>
+                <div style="margin:8px 0"><strong>Nº <input type="text" id="presupuestoNum" value="${safe(draft.number || "0001 - 00001")}" aria-label="Número de presupuesto" style="width:120px;font-weight:bold"></strong></div>
+                <div><label for="fecha"><strong>FECHA</strong></label><br><input type="date" id="fecha" value="${safe(draft.date || "")}"></div>
+              </div>
+            </header>
+            <div class="budget-info">
+              <form id="budgetForm" onsubmit="return false">
+                <div><label for="senores">Señor(es):</label><input type="text" id="senores" value="${safe(draft.customer || "")}"></div>
+                <div><label for="domicilio">Domicilio:</label><input type="text" id="domicilio" value="${safe(draft.address || "")}"></div>
+                <div class="budget-checkboxes" style="margin-top:12px">
+                  <label>Pago:</label>
+                  <input type="checkbox" id="contado"${draft.cash ? " checked" : ""}><label for="contado">Contado</label>
+                  <input type="checkbox" id="ctaCte"${draft.installments ? " checked" : ""}><label for="ctaCte">Cuota</label>
+                </div>
+                <div class="budget-items">
+                  <table>
+                    <thead><tr><th style="width:8%">CANT.</th><th style="width:68%">DESCRIPCION</th><th style="width:24%">IMPORTE</th></tr></thead>
+                    <tbody id="itemsBody">${itemRows}</tbody>
+                    <tfoot><tr><td colspan="2" class="right-align"><strong>Total:</strong></td><td><input type="text" id="total" readonly value="${safe(draft.total || "0.00")}" aria-label="Total"></td></tr></tfoot>
+                  </table>
+                </div>
+                <div class="budget-footer"><label for="valorDeclarado">Señado $</label><input type="number" id="valorDeclarado" value="${safe(draft.deposit || "")}" style="width:150px"></div>
+                <div class="budget-actions">
+                  <button type="button" data-budget-calculate>Calcular Total</button>
+                  <button type="button" data-budget-print>Imprimir Presupuesto</button>
+                  <button type="button" data-budget-whatsapp>Compartir PDF por WhatsApp</button>
+                </div>
+              </form>
+            </div>
+          </section>`;
+      }
+      function materialsListRow(item = {}) {
+        return `<tr>
+          <td><input type="text" value="${safe(item.product || "")}" placeholder="Ingrese producto" aria-label="Producto"></td>
+          <td><input type="number" min="1" value="${safe(item.quantity ?? "1")}" aria-label="Cantidad"></td>
+          <td><select aria-label="Unidad"><option value="Unidad"${(item.unit || "Unidad") === "Unidad" ? " selected" : ""}>Unidad</option><option value="Kg"${item.unit === "Kg" ? " selected" : ""}>Kg</option><option value="Litro"${item.unit === "Litro" ? " selected" : ""}>Litro</option><option value="Litros"${item.unit === "Litros" ? " selected" : ""}>Litros</option></select></td>
+          <td><button type="button" class="materials-list-table__remove" data-remove-material-row aria-label="Eliminar fila">×</button></td>
+        </tr>`;
+      }
+      function pdfSafeText(value) {
+        return String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\x20-\x7E]/g, " ").replace(/\s+/g, " ").trim();
+      }
+      function pdfText(value, x, y, size = 10, bold = false) {
+        const escaped = pdfSafeText(value).replace(/[\\()]/g, "\\$&");
+        return `BT /F${bold ? 2 : 1} ${size} Tf 1 0 0 1 ${x} ${y} Tm (${escaped}) Tj ET`;
+      }
+      function buildClientBudgetPdf(sheet) {
+        const commands = ["0 G", "0.7 w"];
+        const drawLine = (x1, y1, x2, y2) => commands.push(`${x1} ${y1} m ${x2} ${y2} l S`);
+        commands.push(pdfText("Bambino Construcciones", 42, 795, 17, true));
+        commands.push(pdfText("De Marcos Gabriel Digiano", 42, 778, 9));
+        commands.push(pdfText("Todo para tu construccion", 42, 764, 9));
+        commands.push(pdfText("Cel. 2281 323926 - 7300 - Azul (Bs. As.)", 42, 750, 9));
+        commands.push("q 0.8 w 365 742 188 88 re S Q");
+        commands.push(pdfText("PRESUPUESTO", 405, 808, 12, true));
+        commands.push(pdfText("DOCUMENTO NO VALIDO COMO FACTURA", 376, 792, 7));
+        commands.push(pdfText(`N ${sheet.querySelector("#presupuestoNum").value}`, 378, 772, 10, true));
+        commands.push(pdfText(`FECHA: ${sheet.querySelector("#fecha").value || ""}`, 378, 752, 9, true));
+        drawLine(42, 732, 553, 732);
+        commands.push(pdfText(`Senor(es): ${sheet.querySelector("#senores").value}`, 42, 712, 10));
+        commands.push(pdfText(`Domicilio: ${sheet.querySelector("#domicilio").value}`, 42, 692, 10));
+        const cash = sheet.querySelector("#contado").checked ? "X" : " ";
+        const account = sheet.querySelector("#ctaCte").checked ? "X" : " ";
+        commands.push(pdfText(`Pago: [${cash}] Contado    [${account}] Cuota`, 42, 671, 10));
+        const columns = [42, 91, 442, 553];
+        const tableTop = 651;
+        const rowHeight = 22;
+        const tableBottom = tableTop - rowHeight * 16;
+        drawLine(columns[0], tableTop, columns[3], tableTop);
+        drawLine(columns[0], tableTop - rowHeight, columns[3], tableTop - rowHeight);
+        drawLine(columns[0], tableBottom, columns[3], tableBottom);
+        columns.forEach((x) => drawLine(x, tableTop, x, tableBottom));
+        commands.push(pdfText("CANT.", 49, tableTop - 15, 9, true));
+        commands.push(pdfText("DESCRIPCION", 100, tableTop - 15, 9, true));
+        commands.push(pdfText("IMPORTE", 478, tableTop - 15, 9, true));
+        const rows = [...sheet.querySelectorAll("#itemsBody tr")];
+        let total = 0;
+        rows.forEach((row, index) => {
+          const y = tableTop - rowHeight * (index + 1);
+          if (index > 0) drawLine(columns[0], y, columns[3], y);
+          const quantity = row.querySelector(".cant").value;
+          const description = row.querySelector(".desc").value;
+          const amount = Number.parseFloat(row.querySelector(".importe").value) || 0;
+          total += amount;
+          commands.push(pdfText(quantity, 50, y - 15, 9));
+          commands.push(pdfText(description.slice(0, 55), 98, y - 15, 9));
+          const amountText = amount.toFixed(2);
+          commands.push(pdfText(amountText, 544 - amountText.length * 5, y - 15, 9));
+        });
+        commands.push(pdfText(`Total: ${total.toFixed(2)}`, 447, tableBottom - 24, 11, true));
+        commands.push(pdfText(`Senado $: ${sheet.querySelector("#valorDeclarado").value || ""}`, 42, tableBottom - 48, 10));
+        const stream = commands.join("\n");
+        const objects = [
+          "<< /Type /Catalog /Pages 2 0 R >>",
+          "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+          "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
+          "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+          "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+          `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`
+        ];
+        let pdf = "%PDF-1.4\n";
+        const offsets = [0];
+        objects.forEach((object, index) => {
+          offsets.push(pdf.length);
+          pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+        });
+        const xrefOffset = pdf.length;
+        pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+        offsets.slice(1).forEach((offset) => { pdf += `${String(offset).padStart(10, "0")} 00000 n \n`; });
+        pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+        return pdf;
+      }
+      function downloadClientBudgetPdf(file) {
+        const url = URL.createObjectURL(file);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = file.name;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      async function shareClientBudgetPdf() {
+        const sheet = document.querySelector(".client-budget-sheet");
+        if (!sheet) { notify("Abre primero la sección Presupuesto cliente."); return; }
+        const number = pdfSafeText(sheet.querySelector("#presupuestoNum").value) || "presupuesto";
+        const file = new File([buildClientBudgetPdf(sheet)], `Presupuesto-${number.replace(/\s+/g, "-")}.pdf`, { type: "application/pdf" });
+        const shareData = { files: [file], title: "Presupuesto de Bambino Construcciones", text: "Presupuesto para el cliente" };
+        if (navigator.share && navigator.canShare?.(shareData)) {
+          try {
+            await navigator.share(shareData);
+            notify("Presupuesto compartido.");
+          } catch (error) {
+            if (error.name === "AbortError") return;
+            console.error("No se pudo compartir el presupuesto:", error);
+            downloadClientBudgetPdf(file);
+            notify("No se pudo abrir el menú para compartir. El PDF se descargó para enviarlo por WhatsApp.");
+          }
+          return;
+        }
+        downloadClientBudgetPdf(file);
+        const message = `Hola, te comparto el presupuesto ${number}. Adjunta el archivo PDF descargado para enviarlo.`;
+        const whatsapp = window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+        if (whatsapp) whatsapp.opener = null;
+        notify("Se descargó el PDF. Adjunta el archivo descargado al mensaje de WhatsApp.");
+      }
+      function materialsListPage() {
+        const draft = state.documents.materialsList || {};
+        const rows = Array.isArray(draft.rows) ? draft.rows : Array.from({ length: 6 }, () => ({}));
+        return `${heading("Documentos", "Listado materiales", "Prepara, guarda e imprime una lista de materiales para cada obra.")}
+          <section class="materials-list-sheet" aria-label="Lista de materiales">
+            <div class="materials-list-details">
+              <div class="materials-list-group">
+                <label>Número de seguimiento<input type="text" data-material-list-field="tracking" value="${safe(draft.tracking || "BC-001")}" aria-label="Número de seguimiento"></label>
+                <label>Fecha<input type="date" data-material-list-field="date" value="${safe(draft.date || "")}" aria-label="Fecha"></label>
+              </div>
+              <div class="materials-list-group">
+                <label>Cliente<input type="text" data-material-list-field="client" value="${safe(draft.client || "")}" placeholder="Nombre del cliente" aria-label="Cliente"></label>
+                <label>Proyecto / obra<input type="text" data-material-list-field="project" value="${safe(draft.project || "")}" placeholder="Detalle del proyecto" aria-label="Proyecto u obra"></label>
+              </div>
+            </div>
+            <div class="materials-list-actions">
+              <button class="btn" type="button" data-add-material-row>Agregar producto</button>
+              <button class="btn" type="button" data-clear-material-rows>Limpiar listado</button>
+            </div>
+            <div class="materials-list-table-wrap">
+              <table class="materials-list-table">
+                <thead><tr><th>Producto</th><th>Cantidad</th><th>Unidad</th><th></th></tr></thead>
+                <tbody id="materials-list-rows">${rows.map((item) => materialsListRow(item)).join("")}</tbody>
+              </table>
+            </div>
+            <div class="materials-list-footer">
+              <label>Observaciones<textarea data-material-list-field="notes" rows="4" placeholder="Agregar notas o condiciones de compra...">${safe(draft.notes || "")}</textarea></label>
+              <div class="materials-list-contact"><p><strong>Responsable:</strong> Bambino Construcciones</p><p><strong>Teléfono:</strong> 2281-323926</p></div>
+            </div>
+            <div class="materials-list-actions" style="justify-content:flex-end;margin-top:16px;margin-bottom:0">
+              <button class="btn btn-primary" type="button" data-print-material-list>Imprimir</button>
+            </div>
+          </section>`;
+      }
+      function render() {
+        renderNav();
+        document.getElementById("breadcrumb").textContent = navItems.find(([id]) => id === currentPage)?.[1] || "Panel";
+        document.getElementById("today").textContent = new Intl.DateTimeFormat("es-EC", { dateStyle: "full" }).format(new Date());
+        const pages = { dashboard, projects: projectsPage, clients: clientsPage, calendar: calendarPage, budgets: budgetsPage, "client-budget": clientBudgetPage, payments: paymentsPage, finance: financePage, notes: notesPage, stats: statsPage, inventory: inventoryPage, "materials-list": materialsListPage };
+        content.innerHTML = pages[currentPage]();
+      }
+      function openMaterial(material) {
+        materialForm.reset();
+        materialForm.elements.id.value = material?.id || "";
+        materialForm.elements.name.value = material?.name || "";
+        materialForm.elements.unit.value = material?.unit || "kg";
+        materialForm.elements.unitPrice.value = material?.unitPrice ?? 0;
+        const isEditing = Boolean(material);
+        materialForm.elements.unit.disabled = isEditing;
+        materialForm.elements.initialStock.disabled = isEditing;
+        materialForm.elements.initialStock.value = "0";
+        document.getElementById("material-dialog-title").textContent = isEditing ? "Editar material" : "Agregar material";
+        document.getElementById("material-form-hint").textContent = isEditing
+          ? "La unidad no se puede cambiar después de registrar movimientos. Usa entradas y salidas para ajustar el stock."
+          : "El stock inicial se guardará como una entrada. Luego podrás registrar entradas y salidas.";
+        materialDialog.showModal();
+      }
+      function openMovement(material, type) {
+        movementForm.reset();
+        movementForm.elements.materialId.value = material.id;
+        movementForm.elements.type.value = type;
+        movementForm.elements.date.value = day(0);
+        document.getElementById("movement-dialog-title").textContent = type === "entrada" ? "Registrar entrada" : "Registrar salida";
+        document.getElementById("movement-material-name").textContent = `${material.name} · Stock actual: ${material.stock} ${material.unit}`;
+        movementDialog.showModal();
+      }
+      function openProject(project, selectedClientId = "") {
+        projectForm.reset();
+        projectForm.elements.id.value = project?.id || "";
+        projectForm.elements.name.value = project?.name || "";
+        projectForm.elements.clientId.innerHTML = `<option value="">Sin asignar</option>${[...state.clients].sort((a, b) => Number(a.number) - Number(b.number)).map((client) => `<option value="${safe(client.id)}">${safe(client.number)} · ${safe(client.name)}</option>`).join("")}`;
+        projectForm.elements.clientId.value = project?.clientId || selectedClientId;
+        projectForm.elements.location.value = project?.location || "";
+        projectForm.elements.date.value = project?.date || day(0);
+        projectForm.elements.status.value = project?.status || "Planificada";
+        projectForm.elements.budget.value = project?.budget ?? "";
+        projectForm.elements.paid.value = project?.paid ?? 0;
+        projectForm.elements.materialsBudget.value = project?.materialsBudget ?? 0;
+        projectForm.elements.materialsPaid.value = project?.materialsPaid ?? 0;
+        projectForm.elements.notes.value = project?.notes || "";
+        document.getElementById("project-dialog-title").textContent = project ? "Editar obra" : "Registrar obra";
+        projectDialog.showModal();
+      }
+      function openClient(client) {
+        clientForm.reset();
+        clientForm.elements.id.value = client?.id || "";
+        clientForm.elements.number.value = client?.number || nextClientNumber();
+        clientForm.elements.name.value = client?.name || "";
+        clientForm.elements.phone.value = client?.phone || "";
+        clientForm.elements.email.value = client?.email || "";
+        document.getElementById("client-dialog-title").textContent = client ? "Editar cliente" : "Registrar cliente";
+        clientDialog.showModal();
+      }
+      function filterProjects() {
+        const query = (document.getElementById("project-search")?.value || "").trim().toLocaleLowerCase("es");
+        const status = document.getElementById("project-filter")?.value || "";
+        const projects = [...state.projects].sort((a, b) => a.date.localeCompare(b.date)).filter((p) => {
+          const client = clientForProject(p);
+          const text = `${p.name} ${client?.number || ""} ${client?.name || ""} ${p.location}`.toLocaleLowerCase("es");
+          return text.includes(query) && (!status || p.status === status);
+        });
+        const table = document.getElementById("projects-table");
+        if (table) table.innerHTML = projectTable(projects);
+      }
+      function filterClients() {
+        const query = (document.getElementById("client-search")?.value || "").trim().toLocaleLowerCase("es");
+        const clients = state.clients.filter((client) =>
+          `${client.number} ${client.name} ${client.phone || ""} ${client.email || ""}`.toLocaleLowerCase("es").includes(query)
+        );
+        const list = document.getElementById("client-list");
+        if (list) list.innerHTML = clientCards(clients);
+      }
+      navigation.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-page]");
+        if (button) setPage(button.dataset.page);
+      });
+      content.addEventListener("click", (event) => {
+        const target = event.target.closest("button");
+        if (!target) return;
+        if (target.dataset.page) { setPage(target.dataset.page); return; }
+        if (target.hasAttribute("data-add-material-row")) {
+          document.getElementById("materials-list-rows")?.insertAdjacentHTML("beforeend", materialsListRow());
+          saveDocumentDraft("materials-list");
+          return;
+        }
+        if (target.hasAttribute("data-clear-material-rows")) {
+          document.getElementById("materials-list-rows").innerHTML = "";
+          saveDocumentDraft("materials-list");
+          return;
+        }
+        if (target.hasAttribute("data-remove-material-row")) {
+          target.closest("tr").remove();
+          saveDocumentDraft("materials-list");
+          return;
+        }
+        if (target.hasAttribute("data-print-material-list")) { window.print(); return; }
+        if (target.hasAttribute("data-budget-calculate")) {
+          const sheet = target.closest(".client-budget-sheet");
+          const total = [...sheet.querySelectorAll(".importe")].reduce((sum, input) => sum + (Number.parseFloat(input.value) || 0), 0);
+          sheet.querySelector("#total").value = total.toFixed(2);
+          saveDocumentDraft("client-budget");
+          return;
+        }
+        if (target.hasAttribute("data-budget-print")) { saveDocumentDraft("client-budget"); window.print(); return; }
+        if (target.hasAttribute("data-budget-whatsapp")) {
+          saveDocumentDraft("client-budget");
+          shareClientBudgetPdf().catch((error) => {
+            console.error("No se pudo generar el PDF del presupuesto:", error);
+            notify("No se pudo generar el PDF. Revisa los datos e inténtalo nuevamente.");
+          });
+          return;
+        }
+        if (target.hasAttribute("data-new-project")) { openProject(undefined, target.dataset.clientId || ""); return; }
+        if (target.hasAttribute("data-new-client")) { openClient(); return; }
+        if (target.dataset.clientProject) {
+          openProject(undefined, target.dataset.clientProject);
+          return;
+        }
+        if (target.dataset.editClient) {
+          const client = state.clients.find((item) => item.id === target.dataset.editClient);
+          if (client) openClient(client);
+          return;
+        }
+        if (target.dataset.deleteClient) {
+          const client = state.clients.find((item) => item.id === target.dataset.deleteClient);
+          if (client && !state.projects.some((project) => project.clientId === client.id)
+            && window.confirm(`¿Eliminar al cliente “${client.name}”? Esta acción no se puede deshacer.`)) {
+            state.clients = state.clients.filter((item) => item.id !== client.id);
+            persist(); render(); notify("Cliente eliminado.");
+          }
+          return;
+        }
+        if (target.hasAttribute("data-new-note")) { document.getElementById("note-form").reset(); noteDialog.showModal(); return; }
+        if (target.hasAttribute("data-new-material")) { openMaterial(); return; }
+        if (target.dataset.stockMove) {
+          const material = state.inventory.find((item) => item.id === target.dataset.stockMove);
+          if (material) openMovement(material, target.dataset.movementType);
+          return;
+        }
+        if (target.dataset.deleteMaterial) {
+          const material = state.inventory.find((item) => item.id === target.dataset.deleteMaterial);
+          if (material && window.confirm(`¿Eliminar “${material.name}” y su historial de movimientos? Esta acción no se puede deshacer.`)) {
+            state.inventory = state.inventory.filter((item) => item.id !== material.id);
+            persist(); render(); notify("Material eliminado.");
+          }
+          return;
+        }
+        if (target.dataset.edit) {
+          const project = state.projects.find((item) => item.id === target.dataset.edit);
+          if (project) openProject(project);
+          return;
+        }
+        if (target.dataset.delete) {
+          const project = state.projects.find((item) => item.id === target.dataset.delete);
+          if (project && window.confirm(`¿Eliminar la obra “${project.name}”? Esta acción no se puede deshacer.`)) {
+            state.projects = state.projects.filter((item) => item.id !== project.id);
+            persist(); render(); notify("Obra eliminada.");
+          }
+          return;
+        }
+        if (target.dataset.deleteNote) {
+          const note = state.notes.find((item) => item.id === target.dataset.deleteNote);
+          if (note && window.confirm(`¿Eliminar la nota “${note.title}”?`)) {
+            state.notes = state.notes.filter((item) => item.id !== note.id);
+            persist(); render(); notify("Nota eliminada.");
+          }
+          return;
+        }
+        if (target.dataset.editMaterial) {
+          const material = state.inventory.find((item) => item.id === target.dataset.editMaterial);
+          if (material) openMaterial(material);
+          return;
+        }
+        if (target.dataset.goal) {
+          const goal = state.goals[target.dataset.goal];
+          if (goal) {
+            goal.value = Math.max(0, Number(goal.value) + Number(target.dataset.delta));
+            persist(); render();
+          }
+          return;
+        }
+        if (target.dataset.month) {
+          if (target.dataset.month === "today") calendarDate = new Date();
+          else calendarDate.setMonth(calendarDate.getMonth() + Number(target.dataset.month));
+          render();
+        }
+      });
+      content.addEventListener("input", (event) => {
+        if (event.target.id === "project-search") filterProjects();
+        if (event.target.id === "client-search") filterClients();
+        if (event.target.closest(".client-budget-sheet")) saveDocumentDraft("client-budget");
+        if (event.target.closest(".materials-list-sheet")) saveDocumentDraft("materials-list");
+      });
+      content.addEventListener("change", (event) => {
+        if (event.target.id === "project-filter") filterProjects();
+        if (event.target.closest(".client-budget-sheet")) saveDocumentDraft("client-budget");
+        if (event.target.closest(".materials-list-sheet")) saveDocumentDraft("materials-list");
+      });
+      document.getElementById("new-project").addEventListener("click", () => openProject());
+      document.getElementById("export-backup").addEventListener("click", () => {
+        saveDocumentDraft();
+        downloadBackup();
+      });
+      const backupFile = document.getElementById("backup-file");
+      document.getElementById("import-backup").addEventListener("click", () => backupFile.click());
+      backupFile.addEventListener("change", async () => {
+        const file = backupFile.files[0];
+        if (!file) return;
+        try {
+          await restoreBackup(file);
+        } catch (error) {
+          console.error("No se pudo restaurar el respaldo:", error);
+          notify(error.message || "No se pudo leer el archivo de respaldo.");
+        } finally {
+          backupFile.value = "";
+        }
+      });
+      document.querySelectorAll("[data-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
+      materialForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(materialForm);
+        const name = String(data.get("name") || "").trim();
+        const id = String(data.get("id") || "");
+        const existing = state.inventory.find((item) => item.id === id);
+        if (!name) { notify("Escribe el nombre del material."); return; }
+        const unitPrice = Number(data.get("unitPrice"));
+        if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+          notify("El precio unitario debe ser un valor válido igual o mayor que cero.");
+          return;
+        }
+        if (existing) {
+          existing.name = name;
+          existing.unitPrice = unitPrice;
+          persist(); materialDialog.close(); render(); notify("Material actualizado.");
+          return;
+        }
+        const unit = String(data.get("unit"));
+        const initialStock = Number(data.get("initialStock"));
+        if (!["kg", "L", "unidades"].includes(unit) || !Number.isFinite(initialStock) || initialStock < 0) {
+          notify("Revisa la unidad y el stock inicial del material.");
+          return;
+        }
+        const material = { id: crypto.randomUUID(), name, unit, stock: initialStock, unitPrice, movements: [] };
+        if (initialStock > 0) material.movements.push({ id: crypto.randomUUID(), type: "entrada", quantity: initialStock, date: day(0), note: "Stock inicial" });
+        state.inventory.push(material);
+        persist(); materialDialog.close(); render(); notify("Material agregado al inventario.");
+      });
+      movementForm.elements.type.addEventListener("change", (event) => {
+        document.getElementById("movement-dialog-title").textContent = event.currentTarget.value === "entrada" ? "Registrar entrada" : "Registrar salida";
+      });
+      movementForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(movementForm);
+        const material = state.inventory.find((item) => item.id === data.get("materialId"));
+        const type = String(data.get("type"));
+        const quantity = Number(data.get("quantity"));
+        const date = String(data.get("date"));
+        if (!material) { notify("No se encontró el material seleccionado."); return; }
+        if (!["entrada", "salida"].includes(type) || !Number.isFinite(quantity) || quantity <= 0 || !date) {
+          notify("Revisa el tipo, la cantidad y la fecha del movimiento.");
+          return;
+        }
+        if (type === "salida" && quantity > Number(material.stock)) {
+          notify(`No hay stock suficiente. Disponible: ${material.stock} ${material.unit}.`);
+          return;
+        }
+        material.stock = Number(material.stock) + (type === "entrada" ? quantity : -quantity);
+        material.movements = Array.isArray(material.movements) ? material.movements : [];
+        material.movements.push({ id: crypto.randomUUID(), type, quantity, date, note: String(data.get("note") || "").trim() });
+        persist(); movementDialog.close(); render(); notify(type === "entrada" ? "Entrada registrada." : "Salida registrada.");
+      });
+      clientForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(clientForm);
+        const id = String(data.get("id") || "");
+        const number = clientNumberKey(data.get("number"));
+        const name = String(data.get("name") || "").trim();
+        const duplicateNumber = state.clients.some((client) =>
+          client.id !== id && clientNumberKey(client.number) === number
+        );
+        if (!/^\d+$/.test(number) || !name) {
+          notify("Ingresa un número de cliente válido y un nombre.");
+          return;
+        }
+        if (duplicateNumber) {
+          notify("Ese número ya está asignado a otro cliente.");
+          return;
+        }
+        const client = {
+          id: id || crypto.randomUUID(),
+          number,
+          name,
+          phone: String(data.get("phone") || "").trim(),
+          email: String(data.get("email") || "").trim()
+        };
+        const index = state.clients.findIndex((item) => item.id === id);
+        if (index >= 0) state.clients[index] = client;
+        else state.clients.push(client);
+        persist();
+        clientDialog.close();
+        render();
+        notify(index >= 0 ? "Cliente actualizado." : "Cliente registrado.");
+      });
+      projectForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const formData = new FormData(projectForm);
+        const budget = Number(formData.get("budget"));
+        const paid = Number(formData.get("paid") || 0);
+        const materialsBudget = Number(formData.get("materialsBudget") || 0);
+        const materialsPaid = Number(formData.get("materialsPaid") || 0);
+        const clientId = String(formData.get("clientId") || "");
+        if (![budget, paid, materialsBudget, materialsPaid].every((amount) => Number.isFinite(amount) && amount >= 0)) {
+          notify("Ingresa montos válidos iguales o mayores que cero.");
+          return;
+        }
+        if (clientId && !state.clients.some((client) => client.id === clientId)) {
+          notify("Selecciona un cliente registrado.");
+          return;
+        }
+        const id = formData.get("id");
+        const project = {
+          id: id || crypto.randomUUID(),
+          name: String(formData.get("name")).trim(),
+          clientId,
+          location: String(formData.get("location") || "").trim(),
+          date: String(formData.get("date")),
+          status: String(formData.get("status")),
+          budget,
+          paid,
+          materialsBudget,
+          materialsPaid,
+          notes: String(formData.get("notes") || "").trim()
+        };
+        if (!project.name || !project.date) { notify("Completa el nombre y la fecha de inicio."); return; }
+        const index = state.projects.findIndex((item) => item.id === id);
+        if (index >= 0) state.projects[index] = project;
+        else state.projects.push(project);
+        persist();
+        projectDialog.close();
+        render();
+        notify(index >= 0 ? "Obra actualizada." : "Obra registrada.");
+      });
+      document.getElementById("note-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        const title = String(data.get("title") || "").trim();
+        if (!title) { notify("Escribe un título para la nota."); return; }
+        state.notes.push({ id: crypto.randomUUID(), title, body: String(data.get("body") || "").trim(), createdAt: new Date().toISOString() });
+        persist();
+        noteDialog.close();
+        setPage("notes");
+        notify("Nota guardada.");
+      });
+      persist();
+      render();
+      if (databaseError) notify("La base de datos local no está disponible. Los cambios se guardarán en este navegador; descarga respaldos periódicos.");
+      if (database && navigator.storage?.persist) {
+        navigator.storage.persist().then((granted) => {
+          if (!granted) console.info("El navegador no concedió almacenamiento persistente. Usa Descargar respaldo para guardar una copia externa.");
+        }).catch((error) => console.error("No se pudo solicitar almacenamiento persistente:", error));
+      }
+      window.addEventListener("pagehide", flushDatabaseSave);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") flushDatabaseSave();
+      });
+    })();
+  </script>
+</body>
+</html>
